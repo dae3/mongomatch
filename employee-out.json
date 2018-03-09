@@ -1,0 +1,33 @@
+db.inventory.aggregate(
+	[
+		{ $match : { employeeId : '' } },
+		{ $lookup : {
+				from : 'hcmCrossmatch',
+				localField : 'name',
+				foreignField : '_id',
+				as : 'hcm'
+			}
+		},
+		{ $project : {
+				"_id" : "$$REMOVE",
+				"name" : 1,
+				"employees" :  "$hcm.employeeNames"
+			}
+		},
+		{ $addFields : { "employees" : { $arrayElemAt : [ "$employees", 0 ] } } },
+		{ $project : {
+				"name" : 1,
+				"employees.firstname" : 1,
+				"employees.lastname" : 1,
+				"employees.number" : 1,
+				"employees.companycode" : 1,
+				"employees.title" : 1,
+				"employees.emptype" : 1,
+				"employees.score" : 1
+			}
+		},
+		{ $unwind : "$employees" },
+		{ $match : { "employees.score" : { $lt : 4 } } },
+		{ $out : "employeeout" }
+	]
+)

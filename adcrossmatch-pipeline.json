@@ -1,0 +1,59 @@
+	db.adCrossmatch.drop()
+
+	// create normalised ad name
+	db.adUsers.aggregate([
+		{ $addFields : 
+			{
+				normalisedName : { $toLower : { $concat : [ "$firstname", " ", "$lastname" ] } },
+				firstname : { $toLower : "$firstname" },
+				lastname : { $toLower : "$lastname" }
+			}
+		},
+		{ $out : "adUsers" }
+	])
+
+	db.inventory.aggregate([
+		 { $unwind : "$names" }, 
+		 { $lookup : 
+			{
+				from : 'adUsers',
+				let : { iname : "$names" },
+				pipeline : 
+					[ 
+						{ $match :
+							{ $expr : 
+									{ $or :
+										[ 
+											{ $eq : [ "$$iname", "$firstname" ] },
+											{ $eq : [ "$$iname", "$lastname" ] }
+										]
+									}
+							}
+						},
+						{ $project : 
+							{ 
+								"normalisedName" : 1,
+								"email" : 1
+							}
+						}	
+					],
+				as : 'adUser'
+			}
+		 },
+		 { $project : 
+			{
+				"_id" : "$$REMOVE",
+				"name" : 1,
+				"adUser.normalisedName" : 1,
+				"adUser.email" : 1
+			} 
+		},
+		{ $unwind : "$adUser" },
+		{ $group :
+			{
+				_id : "$name",
+				adNames : { $addToSet : "$adUser" }
+			}
+		},
+		{ $out : "adCrossmatch" }
+	])

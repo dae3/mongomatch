@@ -1,0 +1,31 @@
+db.adCrossmatch.aggregate([
+	{ $unwind : "$adNames" }, 
+	{ $sort : { 
+		"_id" : 1, "adNames.score" : -1
+		}
+	},
+	{ $match : { 
+		"adNames.score" : { $lt : 4 }
+		}
+	},
+	{ $group : {
+		"_id" : "$_id", "adNames" : { $addToSet : "$adNames" }
+		}
+	}
+]).pretty()
+
+db.hcmCrossmatch.aggregate([
+	{ $unwind : "$employeeNames" }, 
+	{ $sort : { 
+		"_id" : 1, "employeeNames.score" : -1
+		}
+	},
+	{ $match : { 
+		"employeeNames.score" : { $lt : 4 }
+		}
+	},
+	{ $group : {
+		"_id" : "$_id", "employeeNames" : { $addToSet : "$employeeNames" }
+		}
+	}
+]).pretty()

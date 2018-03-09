@@ -1,0 +1,69 @@
+db.hcmcrossmatch.drop()
+
+// create normalised name
+db.hcm.aggregate([
+	{ $addFields : 
+		{
+			normalisedName : { $toLower : { $concat : [ "$firstname", " ", "$lastname" ] } },
+			firstname : { $toLower : "$firstname" },
+			lastname : { $toLower : "$lastname" }
+		}
+	},
+	{ $out : "hcm" }
+])
+
+db.inventory.aggregate([
+	 { $unwind : "$names" }, 
+	 { $lookup : 
+		{
+			from : 'hcm',
+			let : { iname : "$names" },
+			pipeline : 
+				[ 
+					{ $match :
+						{ $expr : 
+								{ $or :
+									[ 
+										{ $eq : [ "$$iname", "$firstname" ] },
+										{ $eq : [ "$$iname", "$lastname" ] }
+									]
+								}
+						}
+					},
+					{ $project : 
+						{ 
+							"normalisedName" : 1,
+							"firstname" : 1,
+							"lastname" : 1,
+							"number" : 1,
+							"companycode" : 1,
+							"title" : 1,
+							"emptype" : 1
+						}
+					}	
+				],
+			as : 'employee'
+		}
+	 },
+	 { $project : 
+		{
+			"_id" : "$$REMOVE",
+			"name" : 1,
+			"employee.firstname" : 1,
+			"employee.lastname" : 1,
+			"employee.normalisedName" : 1,
+			"employee.number" : 1,
+			"employee.companycode" : 1,
+			"employee.title" : 1,
+			"employee.emptype" : 1
+		} 
+	},
+	{ $unwind : "$employee" },
+	{ $group :
+		{
+			_id : "$name",
+			employeeNames : { $addToSet : "$employee" }
+		}
+	},
+	{ $out : "hcmCrossmatch" }
+])
