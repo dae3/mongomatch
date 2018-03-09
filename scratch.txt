@@ -1,4 +1,4 @@
-Rosette API key 1ffa8a09c222bd27a109fae05f0d70b9
+
 
 AD extract
 csvde -f users.csv -r "(&(objectClass=user)(objectCategory=person)(!userAccountControl:1.2.840.113556.1.4.803:=2))" -l sn,givenName,mail
@@ -36,8 +36,8 @@ inventory with blank email ->
 (rank)
 
 
- db.inventory.aggregate([ { $match : { name : 'Danielle Jensen', email : ''}}, { $unwind : "$names" }, {$lookup : {from:'adUsers',localField:'names',foreignField:'lastname',as:'adUser'}}, {$lookup:{from:'adUsers',localField:'names',foreignField:'firstname',as:'adUser'}},{$project : {'name':1, 'adUser':1}}, {$unwind : "$adUser"}, { $group : { _id : "$name" }}])
-{ "_id" : "Danielle Jensen" }
+ db.inventory.aggregate([ { $match : { name : 'John Smith', email : ''}}, { $unwind : "$names" }, {$lookup : {from:'adUsers',localField:'names',foreignField:'lastname',as:'adUser'}}, {$lookup:{from:'adUsers',localField:'names',foreignField:'firstname',as:'adUser'}},{$project : {'name':1, 'adUser':1}}, {$unwind : "$adUser"}, { $group : { _id : "$name" }}])
+{ "_id" : "John Smith" }
 >
 
 
