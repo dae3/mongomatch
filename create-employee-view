@@ -4,7 +4,7 @@ db.runCommand(
 		viewOn : "inventory",
 		pipeline :
 		[
-			{ $match : { employeeId : '' } },
+			{ $match : { employeeId : ''  } },
 			{ $lookup : {
 					from : 'hcmCrossmatch',
 					localField : 'name',
@@ -19,19 +19,9 @@ db.runCommand(
 				}
 			},
 			{ $addFields : { "employees" : { $arrayElemAt : [ "$employees", 0 ] } } },
-			{ $project : {
-					"name" : 1,
-					"employees.firstname" : 1,
-					"employees.lastname" : 1,
-					"employees.number" : 1,
-					"employees.companycode" : 1,
-					"employees.title" : 1,
-					"employees.emptype" : 1,
-					"employees.score" : 1
-				}
-			},
+			{ $addFields : { "employees.inventoryname" : "$name" } },
 			{ $unwind : "$employees" },
-			{ $match : { "employees.score" : { $lt : 4 } } },
+			{ $replaceRoot : { newRoot : "$employees" } }
 		]
 	}
 )
