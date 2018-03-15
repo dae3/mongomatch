@@ -1,28 +1,32 @@
-db.inventory.aggregate(
-	[
-		{ $match : { email : '' } },
-		{ $lookup : {
-				from : 'adCrossmatch',
-				localField : 'name',
-				foreignField : '_id',
-				as : 'ad'
-			}
-		},
-		{ $project : {
-				"_id" : "$$REMOVE",
-				"name" : 1,
-				"emails" :  "$ad.adNames"
-			}
-		},
-		{ $addFields : { "emails" : { $arrayElemAt : [ "$emails", 0 ] } } },
-		{ $project : {
-				"name" : 1,
-				"emails.email" : 1,
-				"emails.score" : 1
-			}
-		},
-		{ $unwind : "$emails" },
-		{ $match : { "emails.score" : { $lt : 4 } } },
-		{ $out : "emailout" }
-	]
+db.runCommand( 
+	{ 
+		create : "emailout", 
+		viewOn : "inventory",
+		pipeline :
+			[
+				{ $match : { email : '' } },
+				{ $lookup : {
+						from : 'adCrossmatch',
+						localField : 'name',
+						foreignField : '_id',
+						as : 'ad'
+					}
+				},
+				{ $project : {
+						"_id" : "$$REMOVE",
+						"name" : 1,
+						"emails" :  "$ad.adNames"
+					}
+				},
+				{ $addFields : { "emails" : { $arrayElemAt : [ "$emails", 0 ] } } },
+				{ $project : {
+						"name" : 1,
+						"emails.email" : 1,
+						"emails.score" : 1
+					}
+				},
+				{ $unwind : "$emails" },
+				{ $match : { "emails.score" : { $lt : 4 } } },
+			]
+	}
 )

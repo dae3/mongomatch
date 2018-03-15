@@ -1,36 +1,22 @@
-db.hcmcrossmatch.drop()
-
-// create normalised name
-db.hcm.aggregate([
-	{ $addFields : 
+[
+	{ "$unwind" : "$names" }, 
+	 { "$lookup" : 
 		{
-			normalisedName : { $toLower : { $concat : [ "$firstname", " ", "$lastname" ] } },
-			firstname : { $toLower : "$firstname" },
-			lastname : { $toLower : "$lastname" }
-		}
-	},
-	{ $out : "hcm" }
-])
-
-db.inventory.aggregate([
-	 { $unwind : "$names" }, 
-	 { $lookup : 
-		{
-			from : 'hcm',
-			let : { iname : "$names" },
-			pipeline : 
+			"from" : "hcm",
+			"let" : { "iname" : "$names" },
+			"pipeline" : 
 				[ 
-					{ $match :
-						{ $expr : 
-								{ $or :
+					{ "$match" :
+						{ "$expr" : 
+								{ "$or" :
 									[ 
-										{ $eq : [ "$$iname", "$firstname" ] },
-										{ $eq : [ "$$iname", "$lastname" ] }
+										{ "$eq" : [ "$$iname", "$firstname" ] },
+										{ "$eq" : [ "$$iname", "$lastname" ] }
 									]
 								}
 						}
 					},
-					{ $project : 
+					{ "$project" : 
 						{ 
 							"normalisedName" : 1,
 							"firstname" : 1,
@@ -42,10 +28,10 @@ db.inventory.aggregate([
 						}
 					}	
 				],
-			as : 'employee'
+			"as" : "employee"
 		}
 	 },
-	 { $project : 
+	 { "$project" : 
 		{
 			"_id" : "$$REMOVE",
 			"name" : 1,
@@ -58,12 +44,11 @@ db.inventory.aggregate([
 			"employee.emptype" : 1
 		} 
 	},
-	{ $unwind : "$employee" },
-	{ $group :
+	{ "$unwind" : "$employee" },
+	{ "$group" :
 		{
-			_id : "$name",
-			employeeNames : { $addToSet : "$employee" }
+			"_id" : "$name",
+			"employeeNames" : { "$addToSet" : "$employee" }
 		}
-	},
-	{ $out : "hcmCrossmatch" }
-])
+	}
+]
