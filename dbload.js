@@ -1,6 +1,5 @@
 var Excel = require('exceljs');	
 var mongo = require('mongodb').MongoClient;
-//var bamfile = new Excel.Workbook();
 const csv = require('csv-parser')
 const fs = require('fs');
 const readjson = require('readjson');
@@ -10,7 +9,6 @@ const personalTypes = [ 'Blackberry','iPad','IPHONE','Messagebank','Mobile Data 
 
 process.on('unhandledRejection', (reason, p) => {
   console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
-  // application specific logging, throwing an error, or other logic here
 });
 
 var dbWithInventory = mongo.connect('mongodb://localhost:27017')
@@ -23,22 +21,22 @@ var dbWithInventory = mongo.connect('mongodb://localhost:27017')
 		loadHcm(db).then(hcmNormalizeName).then(hcmCrossMatch).then(hcmScore),
 		loadAd(db).then(normalizeName).then(adCrossMatch).then(adScore)
 	]))
-.then((r)=> { console.log(`done\n\n${r}`); process.exit(0) })
+.then((r)=> { console.log('done'); process.exit(0) })
 .catch((e) => { console.log(e); process.exit(-1) })
 
 function wipeDb(db) {
-	console.log(`wipeDb ${db}`);
+	console.log('wipeDb');
 	return Promise.all(['hcm','inventory','adUsers','adCrossmatch','hcmCrossmatch'].map(coll => db.collection(coll).deleteMany({}))).then(()=>db);
 }
 
 function loadInventory(db) {
-	console.log(`loadInventory db ${db}`);
+	console.log('loadInventory');
 	return new Promise((resolve, reject) => {
 		
 		var invColl = db.collection('inventory');
 		var invFile = new Excel.Workbook();
 	
-		invFile.xlsx.readFile('../bpshort.xlsx')
+		invFile.xlsx.readFile('../billing+points.xlsx')
 		.then((workbook) => {
 			var insertPromises = [];
 			var worksheet = workbook.getWorksheet('Data 1');
@@ -62,14 +60,14 @@ function loadInventory(db) {
 }
 
 function loadAd(db) {
-	console.log(`loadAd ${db}`);
+	console.log('loadAd');
 	return new Promise((resolve, reject) => {
 		
 		try {
 			var coll = db.collection('adUsers');
 			var insertPromises = [];
 			
-			fs.createReadStream('../users-short.csv')
+			fs.createReadStream('../users.csv')
 			.pipe(csv())
 			.on('data', (data) => {
 
@@ -96,12 +94,12 @@ function loadAd(db) {
 }
 
 function adCrossMatch(db) {
-	console.log(`adCrossMatch`);
+	console.log('adCrossMatch');
 	return promisifyAggregateCollection(db, 'inventory', 'adCrossmatch', 'adcrossmatch-pipeline.json');
 }
 
 function adScore(db) {
-	console.log(`adScore`);
+	console.log('adScore');
 	return new Promise((resolve, reject) => {
 		var updatePromises = [];
 		var collection = db.collection('adCrossmatch');
@@ -123,7 +121,7 @@ function scoreOneDoc(doc, subNameField) {
 }
 
 function loadHcm(db) {
-	console.log(`loadHcm ${db}`);
+	console.log('loadHcm');
 	return new Promise((resolve, reject) => {
 		
 		var invColl = db.collection('hcm');
@@ -152,17 +150,17 @@ function loadHcm(db) {
 }
 
 function hcmNormalizeName(db) {
-	console.log(`hcmNormalizeName`);
+	console.log('hcmNormalizeName');
 	return promisifyAggregateCollection(db, 'hcm', 'hcm', 'hcmNormalizeName.json');
 }
 
 function hcmCrossMatch(db) {
-	console.log(`hcmCrossMatch`);
+	console.log('hcmCrossMatch');
 	return promisifyAggregateCollection(db, 'inventory', 'hcmCrossmatch', 'hcmCrossmatch-pipeline.json');
 }
 
 function hcmScore(db) {
-	console.log(`hcmScore`);
+	console.log('hcmScore');
 	return new Promise((resolve, reject) => {
 		var updatePromises = [];
 		var collection = db.collection('hcmCrossmatch');
@@ -187,12 +185,11 @@ function tokenizeName(name) {
 }
 
 function normalizeName(db) {
-	console.log(`normalizeName`);
+	console.log('normalizeName');
 	return promisifyAggregateCollection(db, 'adUsers', 'adUsers', 'adNormalizeName.json')
 }
 
 function promisfyReadJson(path) {
-	console.log(`> promisfyReadJson ${path}`);
 	return new Promise((resolve, reject) => {
 		readjson(path, (err,data)=>{if(!err) {resolve(data)}else{reject(err)}});
 	});
@@ -201,7 +198,6 @@ function promisfyReadJson(path) {
 function promisifyAggregateCollection(db, inCollectionName, outCollectionName, pipelineFile) {
 	// https://stackoverflow.com/questions/48666648/out-stage-of-mongo-aggregation-pipeline-not-taking-effect-using-node
 	//  need the toArray call on the Cursor returned from aggregate() to allow the $out stage of the pipeline to take effect 
-	console.log(`> promisifyAggregateCollection ${inCollectionName} ${outCollectionName} ${pipelineFile}`);
 	return new Promise((resolve, reject) => {
 		var collection = db.collection(inCollectionName);
 		promisfyReadJson(pipelineFile)
