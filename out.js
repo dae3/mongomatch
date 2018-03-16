@@ -1,38 +1,55 @@
 var mongo = require('mongodb').MongoClient;
 const fs = require('fs');
+const { Transform } = require('stream');
 
+mongo.connect('mongodb://localhost:27017')
+.then((client) => client.db('temnames'))
+.then((db) => {
+		return Promise.all([
+			collectionToCsv(db.collection('emailout'), 'email.csv'),
+			collectionToCsv(db.collection('employeeout'), 'employee.csv')
+		])
+})
+.then(() => { console.log('done'); process.exit(0) })
+.catch((err) => { console.log(err); process.exit(-1) })
 
-mongo.connect('mongodb://localhost:27017', function (err, client) {
-	if (err == null) {
-		console.log('db connected');
-		var db = client.db('temnames')
-		writeEmailOutput(db);
-		writeEmpOutput(db);
-	} else {
-		console.log(`dbconnect: $err`);
+// function docToCsvRow(doc) { return Object.values(doc).reduce((a,v) => a + ',' + v) + "\n" }
+	
+function collectionToCsv(collection, csvpath) {
+	return new Promise((resolve, reject) => {
+		
+		var csvStream = new DocToCsvTransformStream({ objectMode : true });
+		
+		try {
+			var out = fs.createWriteStream(csvpath);
+			var cur = collection.find();
+			cur.pipe(csvStream).pipe(out);
+			cur.on('end', resolve);
+		} catch (err) { reject(err) }
+	});	
+}
+
+// really naive implementation of a Transform stream
+//  needs argument sanity checking and error handling
+class DocToCsvTransformStream extends Transform {
+
+	constructor(options) {
+		super(options)
+		this.firstLine = true;
 	}
-});
-
-function transfEmail(doc) {
-	return `${doc.name},${doc.emails.email},${doc.emails.score}\r\n`
-}
-
-function transfE(doc) {
-	return `${doc.name},${doc.employees.number},${doc.employees.companycode},${doc.employees.title},${doc.employees.emptype},${doc.employees.firstname},${doc.employees.lastname},${doc.employees.score}\r\n`
-}
-
-function writeEmailOutput(db) {
-	var coll = db.collection('emailout');
-	var efile = fs.createWriteStream('email.csv');
-	efile.on('error',  (e) => {  console.log(e); });
-	var dbstream = 	coll.find().stream( { transform : transfEmail });
-	dbstream.pipe(efile);
-}
-
-function writeEmpOutput(db) {
-	var coll = db.collection('employeeout');
-	var efile = fs.createWriteStream('employee.csv');
-	efile.on('error',  (e) => {  console.log(e); });
-	var dbstream = 	coll.find().stream( { transform : transfE });
-	dbstream.pipe(efile);
+	
+	_transform(chunk, encoding, callback) {
+		var data = "";
+		
+		if (this.firstLine) {
+			data = Object.keys(chunk).reduce((a,v) => a + ',' + v) + '\n'
+			this.firstLine = false
+		}
+		
+		data += Object.values(chunk).reduce((a,v) => a + ',' + v) + '\n'
+		
+		callback(null, data);
+	}
+	
+	_flush(callback) { 	}
 }
