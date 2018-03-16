@@ -21,7 +21,8 @@ db.runCommand(
 			{ $addFields : { "emails" : { $arrayElemAt : [ "$emails", 0 ] } } },
 			{ $addFields : { "emails.inventoryname" : "$name" } },
 			{ $unwind : "$emails" },
-			{ $replaceRoot : { newRoot : "$emails" } }
+			{ $replaceRoot : { newRoot : "$emails" } },
+			{ $match : { "email" : { $exists : true } } }
 		]
 	}
 )
