@@ -14,10 +14,10 @@ mongo.connect('mongodb://localhost:27017')
 .catch((err) => { console.log(err); process.exit(-1) })
 
 // function docToCsvRow(doc) { return Object.values(doc).reduce((a,v) => a + ',' + v) + "\n" }
-	
+
 function collectionToCsv(collection, csvpath) {
 	return new Promise((resolve, reject) => {
-		
+
 		var csvStream = new DocToCsvTransformStream({ objectMode : true });
 		
 		try {
@@ -26,7 +26,7 @@ function collectionToCsv(collection, csvpath) {
 			cur.pipe(csvStream).pipe(out);
 			cur.on('end', resolve);
 		} catch (err) { reject(err) }
-	});	
+	});
 }
 
 // really naive implementation of a Transform stream
@@ -37,19 +37,19 @@ class DocToCsvTransformStream extends Transform {
 		super(options)
 		this.firstLine = true;
 	}
-	
+
 	_transform(chunk, encoding, callback) {
 		var data = "";
-		
+
 		if (this.firstLine) {
 			data = Object.keys(chunk).reduce((a,v) => a + ',' + v) + '\n'
 			this.firstLine = false
 		}
-		
+
 		data += Object.values(chunk).reduce((a,v) => a + ',' + v) + '\n'
-		
+
 		callback(null, data);
 	}
-	
+
 	_flush(callback) { 	}
 }

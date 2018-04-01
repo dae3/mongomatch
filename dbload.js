@@ -32,10 +32,10 @@ function wipeDb(db) {
 function loadInventory(db) {
 	console.log('loadInventory');
 	return new Promise((resolve, reject) => {
-		
+
 		var invColl = db.collection('inventory');
 		var invFile = new Excel.Workbook();
-	
+
 		invFile.xlsx.readFile('../billing+points.xlsx')
 		.then((workbook) => {
 			var insertPromises = [];
@@ -44,10 +44,10 @@ function loadInventory(db) {
 				var row = worksheet.findRow(i);
 				if (personalTypes.includes(row.values[2])) {
 					insertPromises.push(invColl.insertMany([{
-						name : row.values[4], 
-						names : tokenizeName(row.values[4]), 
-						number : row.values[3], 
-						employeeId : row.values[43], 
+						name : row.values[4],
+						names : tokenizeName(row.values[4]),
+						number : row.values[3],
+						employeeId : row.values[43],
 						email : row.values[117]
 					}]))
 				}
@@ -62,11 +62,11 @@ function loadInventory(db) {
 function loadAd(db) {
 	console.log('loadAd');
 	return new Promise((resolve, reject) => {
-		
+
 		try {
 			var coll = db.collection('adUsers');
 			var insertPromises = [];
-			
+
 			fs.createReadStream('../users.csv')
 			.pipe(csv())
 			.on('data', (data) => {
@@ -82,14 +82,14 @@ function loadAd(db) {
 					)
 				)
 			})
-			.on('end', 
+			.on('end',
 				() => Promise.all(insertPromises).then(()=>resolve(db))
 			);
 
-		} catch (ex) { 
+		} catch (ex) {
 			return Promise.reject(ex);
-		}		
-		
+		}
+
 	});
 }
 
@@ -103,7 +103,7 @@ function adScore(db) {
 	return new Promise((resolve, reject) => {
 		var updatePromises = [];
 		var collection = db.collection('adCrossmatch');
-		
+
 		var cursor = collection.find();
 		cursor.on('data', (doc) => {
 			docFilter = { _id : doc._id };
@@ -111,7 +111,7 @@ function adScore(db) {
 		});
 		cursor.on('end', () => {
 			Promise.all(updatePromises).then(resolve(db));
-		});	
+		});
 	})
 }
 
@@ -123,10 +123,10 @@ function scoreOneDoc(doc, subNameField) {
 function loadHcm(db) {
 	console.log('loadHcm');
 	return new Promise((resolve, reject) => {
-		
+
 		var invColl = db.collection('hcm');
 		var invFile = new Excel.Workbook();
-	
+
 		invFile.xlsx.readFile('../Active Employee_07.03.2018.xlsx')
 		.then((workbook) => {
 			var insertPromises = [];
@@ -164,7 +164,7 @@ function hcmScore(db) {
 	return new Promise((resolve, reject) => {
 		var updatePromises = [];
 		var collection = db.collection('hcmCrossmatch');
-		
+
 		var cursor = collection.find();
 		cursor.on('data', (doc) => {
 			docFilter = { _id : doc._id };
@@ -172,14 +172,14 @@ function hcmScore(db) {
 		});
 		cursor.on('end', () => {
 			Promise.all(updatePromises).then(resolve(db));
-		});	
+		});
 	})
 }
 
 function tokenizeName(name) {
 	// eliminate punctuation - well just commas to begin
 	name.replace(',',' ');
-	
+
 	// tokenize on space
 	return name.split(' ').map(s => s.toLowerCase());
 }
@@ -194,10 +194,10 @@ function promisfyReadJson(path) {
 		readjson(path, (err,data)=>{if(!err) {resolve(data)}else{reject(err)}});
 	});
 }
- 
+
 function promisifyAggregateCollection(db, inCollectionName, outCollectionName, pipelineFile) {
 	// https://stackoverflow.com/questions/48666648/out-stage-of-mongo-aggregation-pipeline-not-taking-effect-using-node
-	//  need the toArray call on the Cursor returned from aggregate() to allow the $out stage of the pipeline to take effect 
+	//  need the toArray call on the Cursor returned from aggregate() to allow the $out stage of the pipeline to take effect
 	return new Promise((resolve, reject) => {
 		var collection = db.collection(inCollectionName);
 		promisfyReadJson(pipelineFile)
