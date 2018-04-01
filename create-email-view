@@ -1,6 +1,6 @@
-db.runCommand( 
-	{ 
-		create : "emailout", 
+db.runCommand(
+	{
+		create : "emailout",
 		viewOn : "inventory",
 		pipeline :
 		[
@@ -22,7 +22,7 @@ db.runCommand(
 			{ $addFields : { "emails.inventoryname" : "$name" } },
 			{ $unwind : "$emails" },
 			{ $replaceRoot : { newRoot : "$emails" } },
-			{ $match : { "email" : { $exists : true } } }
+			{ $match : { "email" : { $ne : null } } }
 		]
 	}
 )

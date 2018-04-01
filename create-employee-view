@@ -1,10 +1,10 @@
-db.runCommand( 
-	{ 
-		create : "employeeout", 
+db.runCommand(
+	{
+		create : "employeeout",
 		viewOn : "inventory",
 		pipeline :
 		[
-			{ $match : { employeeId : ''  } },
+			{ $match : { employeeId : '' } },
 			{ $lookup : {
 					from : 'hcmCrossmatch',
 					localField : 'name',
@@ -21,8 +21,8 @@ db.runCommand(
 			{ $addFields : { "employees" : { $arrayElemAt : [ "$employees", 0 ] } } },
 			{ $addFields : { "employees.inventoryname" : "$name" } },
 			{ $unwind : "$employees" },
-			{ $replaceRoot : { newRoot : "$employees" } }
-			{ $match : { "number" : { $exists : true } } }
+			{ $replaceRoot : { newRoot : "$employees" } },
+			{ $match : { number : { $ne : null } } }
 		]
 	}
 )
