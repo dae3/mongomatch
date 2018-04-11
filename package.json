@@ -2,7 +2,7 @@
   "name": "temnames",
   "version": "1.0.0",
   "description": "",
-  "main": "bam.js",
+  "main": "api.js",
   "scripts": {
     "start": "node api.js"
   },
