@@ -5,6 +5,7 @@ const tempy = require('tempy');
 const fs = require('fs');
 const xlsx = require('xlsx');
 const db = require('./db');
+const debug = require('debug')('api-data');
 
 api.post('/:number([1-9]{1})', (req, res) => {
   var busboy = new Busboy({ headers : req.headers });
@@ -50,7 +51,7 @@ api.post('/:number([1-9]{1})', (req, res) => {
     let f = fs.createWriteStream(fn);
 
     file.on('end', () => {
-				console.log(`file ${fn} received, ${f.bytesWritten}, xlsx processing starting`);
+				debug(`file ${fn} received, ${f.bytesWritten}, xlsx processing starting`);
         book = xlsx.readFile(fn);
         fs.unlinkSync(fn);
     });

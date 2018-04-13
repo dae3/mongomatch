@@ -1,0 +1,4 @@
+[
+  { "$unwind" : "$names" },
+  { "$project" : { "_id" : 0 } }
+]

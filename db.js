@@ -1,5 +1,6 @@
 const mongo = require('mongodb').MongoClient;
 const readjson = require('readjson');
+const debug = require('debug')('temnames:db');
 var client;
 var db;
 
@@ -16,6 +17,19 @@ var connect =  function(url, dbname) {
 
 var table = function(name) {
   return db.collection(name).find();
+}
+
+var promiseTable = function(name) {
+  return new Promise((resolve, reject) => {
+    db.collection(name, (err, collection) => {
+      if (err) { reject(err) }
+      else { resolve(collection); }
+    })
+  });
+};
+
+var createView = function(viewJson) {
+
 }
 
 var wdCollectionName = "";
@@ -44,16 +58,16 @@ var promisfyReadJson = function(path) {
 	});
 }
 
-var promisifyAggregateCollection = function(inCollectionName, outCollectionName, pipelineFile) {
-	// https://stackoverflow.com/questions/48666648/out-stage-of-mongo-aggregation-pipeline-not-taking-effect-using-node
-	//  need the toArray call on the Cursor returned from aggregate() to allow the $out stage of the pipeline to take effect
+var promisifyAggregateCollection = function(inCollectionName, pipelineFile) {
+  debug(`promisifyAggregateCollection(${inCollectionName},${pipelineFile})`);
 	return new Promise((resolve, reject) => {
-		var collection = db.collection(inCollectionName);
+    var collection;
+    try { collection = db.collection(inCollectionName); }
+    catch (ex) { debug(`promisifyAggregateCollection ${ex}`); reject(ex); }
 		promisfyReadJson(pipelineFile)
-		.then((pipeline) => collection.aggregate(pipeline).out(outCollectionName).toArray())
-		.then(() => resolve(db))
-		.catch((err) => reject(err));
+    .then((pipeline) => resolve(collection.aggregate(pipeline)))
+		.catch((err) => { debug(`promisifyAggregateCollection ${err}`); reject(err) });
 	});
 }
 
-module.exports = { connect, table, writeDoc, promisifyAggregateCollection, deleteCollection, emptyCollection}
+module.exports = { connect, table, promiseTable, createView, writeDoc, promisfyReadJson, promisifyAggregateCollection, deleteCollection, emptyCollection}
