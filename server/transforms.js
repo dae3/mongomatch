@@ -19,11 +19,11 @@ const documentToCsv = () => {
   })
 };
 
-const jsonTransform = () => {
+const documentToJSON = () => {
   return through2.obj(function(chunk, enc, callback) {
     this.push(JSON.stringify(chunk));
     callback();
   })
 };
 
-module.exports =  { documentToCsv, jsonTransform }
+module.exports =  { documentToCsv, documentToJSON }

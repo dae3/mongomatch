@@ -22,7 +22,7 @@ function getCrossmatch(fromCollection, toCollection) {
 
 api.get('/crossmatch/:from/:to', (req, res) => {
   getCrossmatch(req.params.from, req.params.to)
-  .then((cursor) => cursor.pipe(transforms.documentToCsv()).pipe(res))
+  .then((cursor) => cursor.pipe(transforms.documentToJSON()).pipe(res))
   .catch((e) => {
     res.statusCode = 500
     res.end(e.toString());
@@ -41,7 +41,7 @@ api.get('/scoreCrossmatch/:from/:to', (req, res) => {
   getCrossmatch(req.params.from, req.params.to)
   .then(
     (cursor) => cursor.pipe(scoreTransform)
-    .pipe(transforms.documentToCsv()).pipe(res)
+    .pipe(transforms.documentToJSON()).pipe(res)
   )
   .catch((err) => {
     res.statusCode = 500;
@@ -50,9 +50,9 @@ api.get('/scoreCrossmatch/:from/:to', (req, res) => {
 
 });
 
-api.get('/collectionAsCSV/:name', (req, res) => {
+api.get('/collection/:name', (req, res) => {
   db.promiseTable(req.params.name)
-  .then((table) => table.find().pipe(transforms.documentToCsv()).pipe(res))
+  .then((table) => table.find().pipe(transforms.documentToJSON()).pipe(res))
   .catch((e) => { res.statusCode = 500; res.end(e); });
 });
 
@@ -69,5 +69,5 @@ api.delete('/data/:number([1-9]{1})', (req, res) => {
 api.use('/data', dataRouter);
 
 db.connect('mongodb://db:27017', 'temnames')
-.then(api.listen(80,() => {}))
+.then(api.listen(process.env.API_PORT,() => {}))
 .catch((ex) => { console.log(ex); process.exit(-1) });
