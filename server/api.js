@@ -68,6 +68,6 @@ api.delete('/data/:number([1-9]{1})', (req, res) => {
 // POST router for /data
 api.use('/data', dataRouter);
 
-db.connect('mongodb://localhost:27017', 'temnames')
-.then(api.listen(8080,() => {}))
+db.connect('mongodb://db:27017', 'temnames')
+.then(api.listen(80,() => {}))
 .catch((ex) => { console.log(ex); process.exit(-1) });

@@ -1,0 +1,18 @@
+version: "2"
+services:
+  api:
+    image: "node"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=debug
+    volumes:
+      - ./:/home/node/app
+    expose:
+      - "80"
+    ports:
+      - "80"
+    command: "npm start"
+  db:
+    image: "mongo"
+    expose:
+      - "27017"
