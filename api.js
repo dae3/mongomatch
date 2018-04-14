@@ -3,32 +3,56 @@ const api = require('express')();
 const db = require('./db')
 const outputs = require('./outputs');
 const dataRouter = require('./api-data');
-const through2 = require('through2');
 const debug = require('debug')('temnames:api');
+const transforms = require('./transforms');
+const through2 = require('through2');
+const lev = require('js-levenshtein');
 
 api.get('/status', (req, res) => {
   res.end('something');
 });
 
+function getCrossmatch(fromCollection, toCollection) {
+  return db.promisfyReadJson('./crossmatch.json')
+  .then((pipeline) => {
+     pipeline[0].$lookup.from = toCollection;
+     return db.promisifyAggregateCollection(fromCollection, pipeline)
+   })
+}
+
+api.get('/crossmatch/:from/:to', (req, res) => {
+  getCrossmatch(req.params.from, req.params.to)
+  .then((cursor) => cursor.pipe(transforms.documentToCsv()).pipe(res))
+  .catch((e) => {
+    res.statusCode = 500
+    res.end(e.toString());
+  });
+});
+
+api.get('/scoreCrossmatch/:from/:to', (req, res) => {
+
+  const scoreTransform = through2.obj(function(ch,enc,cb) {
+    let basename = ch.names.reduce((a,v) => a += ` ${v}`).toLowerCase();
+    ch.matchedNames.map((v) => { v.score = lev(basename, v.name.toLowerCase()) });
+    this.push(ch);
+    cb();
+  });
+
+  getCrossmatch(req.params.from, req.params.to)
+  .then(
+    (cursor) => cursor.pipe(scoreTransform)
+    .pipe(transforms.documentToCsv()).pipe(res)
+  )
+  .catch((err) => {
+    res.statusCode = 500;
+    res.end(err.toString());
+  })
+
+});
+
 api.get('/collectionAsCSV/:name', (req, res) => {
-
-  const d2c = () => {
-    var firstLine = true;
-    var rc = 0;
-    return through2.obj(function(chunk, enc, callback) {
-        if (firstLine) {
-          this.push(Object.keys(chunk).reduce((a,v) => a + ',' + v) + '\n');
-          firstLine = false;
-        } else {
-          this.push(Object.values(chunk).reduce((a,v) => a + ',' + v) + '\n');
-        }
-        callback();
-    });
-  };
-
-
-  db.promisifyAggregateCollection(req.params.name, './generic-crossmatch.json')
-  .then((cursor) => cursor.pipe(d2c()).pipe(res))
+  db.promiseTable(req.params.name)
+  .then((table) => table.find().pipe(transforms.documentToCsv()).pipe(res))
   .catch((e) => { res.statusCode = 500; res.end(e); });
 });
 

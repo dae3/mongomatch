@@ -58,15 +58,13 @@ var promisfyReadJson = function(path) {
 	});
 }
 
-var promisifyAggregateCollection = function(inCollectionName, pipelineFile) {
-  debug(`promisifyAggregateCollection(${inCollectionName},${pipelineFile})`);
+var promisifyAggregateCollection = function(inCollectionName, pipeline) {
+  debug(`promisifyAggregateCollection(${inCollectionName},${JSON.stringify(pipeline)})`);
 	return new Promise((resolve, reject) => {
     var collection;
     try { collection = db.collection(inCollectionName); }
     catch (ex) { debug(`promisifyAggregateCollection ${ex}`); reject(ex); }
-		promisfyReadJson(pipelineFile)
-    .then((pipeline) => resolve(collection.aggregate(pipeline)))
-		.catch((err) => { debug(`promisifyAggregateCollection ${err}`); reject(err) });
+    resolve(collection.aggregate(pipeline))
 	});
 }
 
