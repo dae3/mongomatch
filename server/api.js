@@ -9,7 +9,7 @@ const through2 = require('through2');
 const lev = require('js-levenshtein');
 
 api.get('/status', (req, res) => {
-  res.end('something');
+  res.end(JSON.stringify({ status: 'something'}));
 });
 
 function getCrossmatch(fromCollection, toCollection) {
@@ -51,6 +51,7 @@ api.get('/scoreCrossmatch/:from/:to', (req, res) => {
 });
 
 api.get('/collection/:name', (req, res) => {
+  res.set('Access-Control-Allow-Origin','http://localhost:4200');
   db.promiseTable(req.params.name)
   .then((table) => table.find().pipe(transforms.documentToJSON()).pipe(res))
   .catch((e) => { res.statusCode = 500; res.end(e); });

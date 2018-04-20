@@ -20,10 +20,15 @@ const documentToCsv = () => {
 };
 
 const documentToJSON = () => {
+  var firstLine = true;
   return through2.obj(function(chunk, enc, callback) {
+    if (firstLine) { this.push('['); firstLine = false; }
+    else { this.push(',') }
     this.push(JSON.stringify(chunk));
     callback();
-  })
+  },
+    function(cb) { this.push(']'); cb(); }
+  )
 };
 
 module.exports =  { documentToCsv, documentToJSON }
