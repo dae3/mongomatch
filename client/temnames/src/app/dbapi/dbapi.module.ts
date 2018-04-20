@@ -1,10 +1,9 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DatabaseService } from './database.service';
-import { CollectionService } from './collection.service';
+import { HttpClientModule } from '@angular/common/http';
+
 
 @NgModule({
-  imports: [ CommonModule ],
-  providers: [DatabaseService, CollectionService]
+  imports: [ CommonModule, HttpClientModule ],
 })
 export class DbapiModule { }

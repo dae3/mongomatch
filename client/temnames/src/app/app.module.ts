@@ -1,8 +1,9 @@
-import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { DbapiModule } from './dbapi/dbapi.module';
+import { BrowserModule } from '@angular/platform-browser';
 import { AppComponent } from './app.component';
 import { DataUploaderComponent } from './data-uploader/data-uploader.component';
+import { DatabaseService } from './database.service';
+import { HttpClientModule } from '@angular/common/http';
 import { CollectionComponent } from './collection/collection.component';
 
 @NgModule({
@@ -12,8 +13,14 @@ import { CollectionComponent } from './collection/collection.component';
     CollectionComponent
   ],
   imports: [
-    BrowserModule
+    BrowserModule,
+    HttpClientModule
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  providers: [ DatabaseService ]
 })
-export class AppModule { }
+export class AppModule {
+  ngOnInit() {
+    
+  }
+}

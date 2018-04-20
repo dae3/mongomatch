@@ -1,6 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { DbapiModule } from '../dbapi/dbapi.module';
-import { CollectionService } from '../dbapi/collection.service';
+import { Component, OnInit, Input } from '@angular/core';
+import { DatabaseService, DatabaseApiResponse } from '../database.service';
 
 @Component({
   selector: 'app-collection',
@@ -10,11 +9,20 @@ import { CollectionService } from '../dbapi/collection.service';
 
 export class CollectionComponent implements OnInit {
 
-  private name : String = "";
+  private data : Array<Object>;
 
-  constructor(collectionService : CollectionService) { }
+  constructor(private db : DatabaseService) { }
 
-  ngOnInit() {
+  private _collectionName : string;
+  get collectionName() : string { return this._collectionName; }
+    @Input()
+    set collectionName(val : string) {
+    this._collectionName = val;
+    this.db.getCollection(this._collectionName).subscribe(
+      d => this.data = d
+    );
   }
+
+  ngOnInit() { }
 
 }
