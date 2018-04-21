@@ -5,12 +5,14 @@ import { DataUploaderComponent } from './data-uploader/data-uploader.component';
 import { DatabaseService } from './database.service';
 import { HttpClientModule } from '@angular/common/http';
 import { CollectionComponent } from './collection/collection.component';
+import { CollectionListComponent } from './collection-list/collection-list.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     DataUploaderComponent,
-    CollectionComponent
+    CollectionComponent,
+    CollectionListComponent
   ],
   imports: [
     BrowserModule,

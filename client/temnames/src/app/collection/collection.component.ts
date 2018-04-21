@@ -14,9 +14,9 @@ export class CollectionComponent implements OnInit {
   constructor(private db : DatabaseService) { }
 
   private _collectionName : string;
-  get collectionName() : string { return this._collectionName; }
+  public get collectionName() : string { return this._collectionName; }
     @Input()
-    set collectionName(val : string) {
+    public set collectionName(val : string) {
     this._collectionName = val;
     this.db.getCollection(this._collectionName).subscribe(
       d => this.data = d

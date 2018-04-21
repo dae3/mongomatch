@@ -1,5 +1,6 @@
 import { TestBed, async } from '@angular/core/testing';
 import { AppComponent } from './app.component';
+import { CollectionListComponent } from './collection-list/collection-list.component';
 import { CollectionComponent } from './collection/collection.component';
 import { DatabaseService, DatabaseApiResponse } from './database.service';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
@@ -27,7 +28,7 @@ describe('AppComponent', () => {
     TestBed.configureTestingModule({
       imports : [ HttpClientModule ],
       declarations: [
-        AppComponent, CollectionComponent
+        AppComponent, CollectionComponent, CollectionListComponent
       ],
       providers : [
         { provide: DatabaseService, useValue: databaseServiceStub },

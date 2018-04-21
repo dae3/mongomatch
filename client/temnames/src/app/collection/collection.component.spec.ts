@@ -42,7 +42,6 @@ describe('CollectionComponent', () => {
     const baseElt : HTMLElement = fixture.nativeElement;
     const li = baseElt.querySelectorAll('ul li');
     expect(li.length).toBe(testApiData.length);
-    li.map((e) => expect(e.))
   });
 
 
