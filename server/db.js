@@ -68,4 +68,6 @@ var promisifyAggregateCollection = function(inCollectionName, pipeline) {
 	});
 }
 
-module.exports = { connect, table, promiseTable, createView, writeDoc, promisfyReadJson, promisifyAggregateCollection, deleteCollection, emptyCollection}
+const getAllCollections = () => db.collections();
+
+module.exports = { connect, table, getAllCollections, promiseTable, createView, writeDoc, promisfyReadJson, promisifyAggregateCollection, deleteCollection, emptyCollection}

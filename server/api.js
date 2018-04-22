@@ -62,9 +62,21 @@ api.delete('/data/:number([1-9]{1})', (req, res) => {
 		.then(res.end(`deleted data${req.params.number}`))
 		.catch((e) => {
 			res.statusCode = 500;
-			res.end(e);
+			res.end(e.toString());
 		});
 });
+
+api.get('/collections', (req, res) => {
+  res.set('Access-Control-Allow-Origin','http://localhost:4200');
+  db.getAllCollections()
+  .then((r) => {
+    res.end( '[' + r.map((e) => e.s.name).reduce((a,i) => a = a+','+i) + ']' );
+  })
+  .catch((e) => {
+    res.statusCode = 500;
+    res.end(e.toString());
+  })
+})
 
 // POST router for /data
 api.use('/data', dataRouter);
