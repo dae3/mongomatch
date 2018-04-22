@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CollectionComponent } from '../collection/collection.component';
+import { DatabaseService } from '../database.service';
 
 @Component({
   selector: 'app-collection-list',
@@ -10,13 +11,14 @@ export class CollectionListComponent implements OnInit  {
 
   private collectionNames : Array<string> = [];
 
-  constructor() { }
+  constructor(private db : DatabaseService) { }
 
   public addCollection(name : string) { this.collectionNames.push(name); }
 
   ngOnInit() {
-    this.addCollection('data1');
-    this.addCollection('data2');
+    this.db.getAllCollections().subscribe(
+      collections => collections.forEach(c => this.addCollection(c))
+    )
   }
 
 }

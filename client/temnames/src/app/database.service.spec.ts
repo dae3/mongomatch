@@ -53,4 +53,12 @@ describe('DatabaseService', () => {
     req.flush(resp);
   }));
 
+  it('should return a list of all collections in the database', inject([DatabaseService], (db : DatabaseService) => {
+    let resp = [ 'collectionTheFirst','collectionTheSecond' ];
+    db.getAllCollections().subscribe(collections=>expect(collections).toBe(resp));
+    const req = httpTestingController.expectOne(`${BASEURL}/collections`);
+    expect(req.request.method).toBe('GET');
+    req.flush(resp);
+  })
+
 });

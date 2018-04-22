@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
+import { of } from 'rxjs/observable/of';
 
 @Injectable()
 export class DatabaseService {
@@ -27,6 +28,10 @@ export class DatabaseService {
 
   public getCollection(collectionName : string) : Observable<Array<Object>> {
     return  this.http.get<Array<Object>>(`${this.URL}/collection/${collectionName}`);
+  }
+
+  public getAllCollections() : Observable<Array<String>> {
+    return this.http.get<Array<Object>>(`${this.URL}/collections`);
   }
 }
 

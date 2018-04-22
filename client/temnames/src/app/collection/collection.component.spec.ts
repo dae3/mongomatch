@@ -49,7 +49,7 @@ describe('CollectionComponent', () => {
    component.collectionName = 'something';
    fixture.detectChanges();
    const theDiv = elt.querySelector('div#count');
-   expect(theDiv.firstChild.textContent).toBe(testApiData.length.toString());
+   expect(theDiv.firstChild.textContent).toBe(`this collection has ${testApiData.length} documents`);
  })
 
 
