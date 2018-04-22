@@ -9,6 +9,7 @@ describe('CollectionComponent', () => {
   let component: CollectionComponent;
   let fixture: ComponentFixture<CollectionComponent>;
   const testApiData = [ { one : 1 }, { two : 2 }, { three: 4 } ];
+  let elt : HTMLElement;
 
   let databaseServiceStub : Partial<DatabaseService> = {
     getCollection : (name : string) => of(testApiData)
@@ -30,19 +31,26 @@ describe('CollectionComponent', () => {
     fixture = TestBed.createComponent(CollectionComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    elt = fixture.nativeElement;
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have an ul with an li for each collection document', () => {
-    component.collectionName = 'doesn\'t matter';
-    fixture.detectChanges();
-    const baseElt : HTMLElement = fixture.nativeElement;
-    const li = baseElt.querySelectorAll('ul li');
-    expect(li.length).toBe(testApiData.length);
-  });
+ it('should show the collection name', () => {
+   component.collectionName = 'thename';
+   fixture.detectChanges();
+   const nameElt = elt.querySelector('h1');
+   expect(nameElt.firstChild.textContent).toBe('thename');
+ });
+
+ it('should show the collection size', () => {
+   component.collectionName = 'something';
+   fixture.detectChanges();
+   const theDiv = elt.querySelector('div#count');
+   expect(theDiv.firstChild.textContent).toBe(testApiData.length.toString());
+ })
 
 
 });

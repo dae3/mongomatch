@@ -9,10 +9,10 @@ import { DatabaseService, DatabaseApiResponse } from '../database.service';
 
 export class CollectionComponent implements OnInit {
 
-  private data : Array<Object>;
-
+  private data : Array<Object> = [];
   constructor(private db : DatabaseService) { }
 
+  public get numCollections() { return this.data.length }
   private _collectionName : string;
   public get collectionName() : string { return this._collectionName; }
     @Input()

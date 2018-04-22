@@ -15,6 +15,8 @@ export class CollectionListComponent implements OnInit  {
   public addCollection(name : string) { this.collectionNames.push(name); }
 
   ngOnInit() {
+    this.addCollection('data1');
+    this.addCollection('data2');
   }
 
 }
