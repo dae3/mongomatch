@@ -69,9 +69,7 @@ api.delete('/data/:number([1-9]{1})', (req, res) => {
 api.get('/collections', (req, res) => {
   res.set('Access-Control-Allow-Origin','http://localhost:4200');
   db.getAllCollections()
-  .then((r) => {
-    res.end( '[' + r.map((e) => e.s.name).reduce((a,i) => a = a+','+i) + ']' );
-  })
+  .then((r) => { res.end(JSON.stringify(r.map((e) => e.s.name))) })
   .catch((e) => {
     res.statusCode = 500;
     res.end(e.toString());
