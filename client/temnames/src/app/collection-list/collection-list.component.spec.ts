@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { CollectionListComponent } from './collection-list.component';
 import { CollectionComponent } from '../collection/collection.component';
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { DatabaseService } from '../database.service';
 import { of } from 'rxjs/observable/of';
 
@@ -9,12 +9,16 @@ describe('CollectionListComponent', () => {
   let component: CollectionListComponent;
   let fixture: ComponentFixture<CollectionListComponent>;
   let elt : HTMLElement;
-  const dummyDbCollections = ['collectionTheFirst','collectionTheSecond']
+  const dummyDbCollections = ['collectionTheFirst','collectionTheSecond','collectionTheThird'];
 
   // stub CollectionComponent to avoid all its dependencies
   @Component({selector: 'app-collection', template: ''})
   class CollectionComponent {
+    private _selected;
     @Input() public set collectionName(v: string) {};
+    @Input() public set selected(v: boolean) { this._selected = v }
+    @Output() public selectionChanged : EventEmitter<boolean> = new EventEmitter();
+    @Input() public set selected(v: boolean)
   }
 
   let mockDbService : Partial<DatabaseService> = {
@@ -54,5 +58,9 @@ describe('CollectionListComponent', () => {
 
   it('should load all collections from the database', () => {
     expect(elt.querySelectorAll('tr.collection').length).toBe(dummyDbCollections.length);
+  })
+
+  it('allows no more than 2 selected collections', () => {
+    
   })
 });

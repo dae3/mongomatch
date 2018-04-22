@@ -1,2 +1,10 @@
 <h1>{{collectionName}}</h1>
 <div id="count">this collection has {{numCollections}} documents</div>
+<div id="selectedFlag">
+  <input type='checkbox' [(checked)]="selected">thisone
+</div>
+<div id="sampleDoc">
+  <ul>
+    <li *ngFor="let key of keys">{{key}}</li>
+  </ul>
+</div>

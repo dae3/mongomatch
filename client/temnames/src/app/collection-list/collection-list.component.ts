@@ -18,7 +18,7 @@ export class CollectionListComponent implements OnInit  {
   ngOnInit() {
     this.db.getAllCollections().subscribe(
       collections => collections.forEach(c => this.addCollection(c))
-    )
+    );
   }
 
 }

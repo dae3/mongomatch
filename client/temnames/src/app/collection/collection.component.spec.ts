@@ -1,15 +1,14 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { DatabaseService, DatabaseApiResponse } from '../database.service';
+import { async, fakeAsync, tick, ComponentFixture, TestBed } from '@angular/core/testing';
+import { DatabaseService } from '../database.service';
 import { CollectionComponent } from './collection.component';
-import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
-import { HttpClientModule, HttpClient } from '@angular/common/http';
 
 describe('CollectionComponent', () => {
   let component: CollectionComponent;
   let fixture: ComponentFixture<CollectionComponent>;
-  const testApiData = [ { one : 1 }, { two : 2 }, { three: 4 } ];
+  const testApiData = [ { oneOne : 1, oneTwo : 2 }, { twoOne : 21, twoTwo: 22 }, { three: 4 } ];
   let elt : HTMLElement;
+  let debugElement : debugElement;
 
   let databaseServiceStub : Partial<DatabaseService> = {
     getCollection : (name : string) => of(testApiData)
@@ -17,10 +16,8 @@ describe('CollectionComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ HttpClientModule ],
       declarations: [ CollectionComponent ],
       providers : [
-        HttpClient,
         { provide: DatabaseService, useValue: databaseServiceStub }
       ]
     })
@@ -32,6 +29,7 @@ describe('CollectionComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
     elt = fixture.nativeElement;
+    debugElement = fixture.debugElement;
   });
 
   it('should create', () => {
@@ -52,5 +50,36 @@ describe('CollectionComponent', () => {
    expect(theDiv.firstChild.textContent).toBe(`this collection has ${testApiData.length} documents`);
  })
 
+ it('should show a sample document', () => {
+   component.collectionName = 'anything';
+   fixture.detectChanges();
+   const liElements = elt.querySelectorAll('div#sampleDoc ul li');
+   const testKeys = testApiData.map(e=>Object.keys(e));
+   expect(liElements).toBeTruthy();
+   expect(liElements.length).toBe(Object.keys(testApiData[0]).length);
+   expect(liElements[0].firstChild.textContent).toBe(testKeys[0][0]);
+  }
+   // entry for each  key in the document
+   // expect(theUl.querySelectorAll('li').length).toBe(Object.keys(testApiData[0]).length)
+ );
 
+ it('can be selected', () => {
+   const cb = elt.querySelector('div#selectedFlag input');
+   expect(component.selected).toBe(false);
+   expect(cb.checked).not.toBeTruthy();
+   component.selected = true;
+   fixture.detectChanges();
+   expect(cb.checked).toBeTruthy();
+
+   // cb.checked = false;
+   // fixture.detectChanges();
+   // expect(component.selected).not.toBeTruthy();
+ })
+
+ // spy on the emitter function
+ it('generates an event on selection change', fakeAsync(() => {
+   spyOn(component.selectionChanged, 'emit');
+   component.selected = false;
+   expect(component.selectionChanged.emit).toHaveBeenCalledWith(false);
+ })
 });

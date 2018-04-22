@@ -30,8 +30,8 @@ export class DatabaseService {
     return  this.http.get<Array<Object>>(`${this.URL}/collection/${collectionName}`);
   }
 
-  public getAllCollections() : Observable<Array<String>> {
-    return this.http.get<Array<Object>>(`${this.URL}/collections`);
+  public getAllCollections() : Observable<Array<string>> {
+    return this.http.get<Array<string>>(`${this.URL}/collections`);
   }
 }
 
