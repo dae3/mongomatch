@@ -1,3 +1,35 @@
-<p>
-  <input id="filename" name="Filename">
-</p>
+<div class="component">
+  <h1>Available data sets</h1>
+  <div class="collectionList" *ngFor="let coll of collections">
+    <span>
+      {{coll}}
+      <button class="delete" value='{{coll}}' (click)="delete($event)">Delete</button>
+    </span>
+  </div>
+
+  <form [formGroup]="upload" (ngSubmit)="submit()">
+    <p>
+      <label>New collection name
+        <input required formControlName="name">
+      </label>
+    </p>
+    <p>
+      <label>Excel file
+        <input required type="file"  (change)="fileChanged($event)" #realfile>
+      </label>
+      <br>
+      <input readonly formControlName="fileValidator">
+      <span *ngIf="eltInvalid('fileValidator')">X</span>
+    </p>
+    <p>
+      <label>Column containing names
+        <input required formControlName="namefield">
+        <span *ngIf="eltInvalid('namefield')">X</span>
+      </label>
+    </p>
+    <p><button type="submit" [disabled]="upload.invalid">Upload</button></p>
+  </form>
+  <p>Model: {{upload.value | json}}</p>
+  <p>Status: {{upload.status}}</p>
+  {{zwab}}
+</div>

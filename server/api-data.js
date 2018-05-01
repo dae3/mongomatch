@@ -5,7 +5,7 @@ const tempy = require('tempy');
 const fs = require('fs');
 const xlsx = require('xlsx');
 const db = require('./db');
-const debug = require('debug')('api-data');
+const debug = require('debug')('temnames:api-data');
 
 api.post('/:number([1-9]{1})', (req, res) => {
   var busboy = new Busboy({ headers : req.headers });

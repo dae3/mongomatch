@@ -8,8 +8,25 @@ const transforms = require('./transforms');
 const through2 = require('through2');
 const lev = require('js-levenshtein');
 
+api.use(function(req, res, next)  {
+  res.set('Access-Control-Allow-Origin', process.env.CORS_FROM);
+  res.set('Access-Control-Allow-Methods', "GET, POST, DELETE, PUT");
+  next();
+})
+
 api.get('/status', (req, res) => {
   res.end(JSON.stringify({ status: 'something'}));
+});
+
+api.delete('/collection/:name', (req, res) => {
+  debug(`DELETE /${req.params.name}`);
+  db.deleteCollection(req.params.name)
+  .then((dropRes) => { res.statausCode = 200; res.end(); })
+  .catch((err) => {
+    res.statusCode = 404;
+    res.end(err.toString());
+  })
+  .then(() => debug(`DELETE /${req.params.name} => ${res.statusCode}`))
 });
 
 function getCrossmatch(fromCollection, toCollection) {
@@ -21,6 +38,7 @@ function getCrossmatch(fromCollection, toCollection) {
 }
 
 api.get('/crossmatch/:from/:to', (req, res) => {
+  debug(`/crossmatch ${req.params.from},${req.params.to}`);
   getCrossmatch(req.params.from, req.params.to)
   .then((cursor) => cursor.pipe(transforms.documentToJSON()).pipe(res))
   .catch((e) => {
@@ -30,7 +48,7 @@ api.get('/crossmatch/:from/:to', (req, res) => {
 });
 
 api.get('/scoreCrossmatch/:from/:to', (req, res) => {
-
+  debug(`/scoreCrossmatch ${req.params.from},${req.params.to}`);
   const scoreTransform = through2.obj(function(ch,enc,cb) {
     let basename = ch.names.reduce((a,v) => a += ` ${v}`).toLowerCase();
     ch.matchedNames.map((v) => { v.score = lev(basename, v.name.toLowerCase()) });
@@ -40,8 +58,14 @@ api.get('/scoreCrossmatch/:from/:to', (req, res) => {
 
   getCrossmatch(req.params.from, req.params.to)
   .then(
-    (cursor) => cursor.pipe(scoreTransform)
-    .pipe(transforms.documentToJSON()).pipe(res)
+    (cursor) => {
+      cursor
+        .on('end', () => debug('/scoreCrossmatch cursor end'))
+        .pipe(scoreTransform)
+        .pipe(transforms.documentToJSON())
+        .pipe(res);
+      debug('/scoreCrossmatch db return');
+    }
   )
   .catch((err) => {
     res.statusCode = 500;
@@ -51,7 +75,6 @@ api.get('/scoreCrossmatch/:from/:to', (req, res) => {
 });
 
 api.get('/collection/:name', (req, res) => {
-  res.set('Access-Control-Allow-Origin','http://localhost:4200');
   db.promiseTable(req.params.name)
   .then((table) => table.find().pipe(transforms.documentToJSON()).pipe(res))
   .catch((e) => { res.statusCode = 500; res.end(e); });
@@ -66,8 +89,8 @@ api.delete('/data/:number([1-9]{1})', (req, res) => {
 		});
 });
 
+
 api.get('/collections', (req, res) => {
-  res.set('Access-Control-Allow-Origin','http://localhost:4200');
   db.getAllCollections()
   .then((r) => { res.end(JSON.stringify(r.map((e) => e.s.name))) })
   .catch((e) => {

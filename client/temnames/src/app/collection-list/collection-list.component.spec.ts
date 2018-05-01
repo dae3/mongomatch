@@ -1,33 +1,54 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { CollectionListComponent } from './collection-list.component';
 import { CollectionComponent } from '../collection/collection.component';
+import { ResultGridComponent } from '../result-grid/result-grid.component';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { DatabaseService } from '../database.service';
 import { of } from 'rxjs/observable/of';
 
-describe('CollectionListComponent', () => {
+xdescribe('CollectionListComponent', () => {
   let component: CollectionListComponent;
   let fixture: ComponentFixture<CollectionListComponent>;
   let elt : HTMLElement;
-  const dummyDbCollections = ['collectionTheFirst','collectionTheSecond','collectionTheThird'];
-
-  // stub CollectionComponent to avoid all its dependencies
-  @Component({selector: 'app-collection', template: ''})
-  class CollectionComponent {
-    private _selected;
-    @Input() public set collectionName(v: string) {};
-    @Input() public set selected(v: boolean) { this._selected = v }
-    @Output() public selectionChanged : EventEmitter<boolean> = new EventEmitter();
-    @Input() public set selected(v: boolean)
-  }
+  const dummyDbCollections = ['collection1','collection2','collection3'];
+  const dummyCompareResult = [
+    {
+       _id: 1,
+       somefield: 'aaa',
+       name: 'John Doe',
+       names: ['john','doe'],
+       matchedNames: [
+         { name: 'John Smith', score: 1 },
+         { name: 'Jane Doe', score: 2 }
+       ]
+    },
+    {
+       _id: 2,
+       somefield: 'bbb',
+       name: 'Jane Smith',
+       names: ['jane','smith'],
+       matchedNames: [
+         { name: 'John Smith', score: 1 },
+         { name: 'Jane Doe', score: 2 }
+       ]
+    }
+  ];
 
   let mockDbService : Partial<DatabaseService> = {
-    getAllCollections : () => of(dummyDbCollections)
-  }
+    getAllCollections : () => of(dummyDbCollections),
+    getCollection : () => of([{},{},{}]),
+    compare: (first: string, second: string) => of(dummyCompareResult)
+  };
+
+
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ CollectionListComponent, CollectionComponent ],
+      declarations: [
+         CollectionListComponent,
+         CollectionComponent,
+          ResultGridComponent
+        ],
       providers: [
         { provide: DatabaseService,  useValue: mockDbService }
       ]
@@ -46,21 +67,59 @@ describe('CollectionListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should add a collection', () => {
-    const baseElt : HTMLElement = fixture.nativeElement;
-    var li = baseElt.querySelectorAll('table tr');
-    const origCount = li == null ? 0 : li.length;
-    component.addCollection('anything');
-    fixture.detectChanges();
-    li = baseElt.querySelectorAll('tr.collection');
-    expect(li.length).toBe(origCount+1);
-  })
-
   it('should load all collections from the database', () => {
-    expect(elt.querySelectorAll('tr.collection').length).toBe(dummyDbCollections.length);
+    expect(elt.querySelectorAll('select#collection1 option').length).toBe(dummyDbCollections.length+1);
+    expect(elt.querySelectorAll('select#collection2 option').length).toBe(dummyDbCollections.length+1);
+
+    var actual = [];
+    var expected = ['Choose a collection'];
+    Array.prototype.push.apply(expected, dummyDbCollections);
+    elt.querySelectorAll('select#collection1 option').forEach( e=>actual.push(e.label) );
+    expect(actual).toEqual(expected);
+
+    var actual = [];
+    var expected = ['Choose a collection'];
+    Array.prototype.push.apply(expected, dummyDbCollections);
+    elt.querySelectorAll('select#collection2 option').forEach( e=>actual.push(e.label) );
+    expect(actual).toEqual(expected);
   })
 
-  it('allows no more than 2 selected collections', () => {
-    
+  it('should have a compare button enabled once collections are chosen', () => {
+    const button = elt.querySelector('button') as HTMLButton;
+    expect(component.collection1).toBe(undefined);
+    expect(component.collection2).toBe(undefined);
+    expect(button.disabled).toBeTruthy();
+
+    elt.querySelector('select#collection1').value = dummyDbCollections[0];
+    elt.querySelector('select#collection1').dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(button.disabled).toBeTruthy();
+
+    elt.querySelector('select#collection2').value = dummyDbCollections[1];
+    elt.querySelector('select#collection2').dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(button.disabled).not.toBeTruthy();
+  })
+
+  it('compares 2 selected collections', () => {
+    const compareSpy = spyOn(fixture.debugElement.injector.get(DatabaseService), 'compare').and.callThrough();
+
+    elt.querySelector('select#collection1').value = dummyDbCollections[0];
+    elt.querySelector('select#collection1').dispatchEvent(new Event('change'));
+
+    elt.querySelector('select#collection2').value = dummyDbCollections[1];
+    elt.querySelector('select#collection2').dispatchEvent(new Event('change'));
+    elt.querySelector('button').dispatchEvent(new Event('click'));
+    expect(compareSpy).toHaveBeenCalledWith(dummyDbCollections[0], dummyDbCollections[1]);
+  });
+
+  it('displays comparison results', () => {
+    elt.querySelector('select#collection1').value = dummyDbCollections[0];
+    elt.querySelector('select#collection1').dispatchEvent(new Event('change'));
+    elt.querySelector('select#collection2').value = dummyDbCollections[1];
+    elt.querySelector('select#collection2').dispatchEvent(new Event('change'));
+    elt.querySelector('button').dispatchEvent(new Event('click'));
+    fixture.detectChanges();
+    expect(elt.querySelectorAll('div.result table tr').length).toBe(dummyCompareResult.length);
   })
 });
