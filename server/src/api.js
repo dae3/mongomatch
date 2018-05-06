@@ -1,6 +1,6 @@
 const fs = require('fs');
 const api = require('express')();
-const db = require('./db')
+const db = require('./db');
 const outputs = require('./outputs');
 const dataRouter = require('./api-data');
 const debug = require('debug')('temnames:api');
@@ -98,6 +98,8 @@ api.get('/collections', (req, res) => {
     res.end(e.toString());
   })
 })
+
+exports.close = function() { api.close() };
 
 // POST router for /data
 api.use('/data', dataRouter);

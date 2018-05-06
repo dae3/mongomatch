@@ -4,7 +4,8 @@
   "description": "",
   "main": "api.js",
   "scripts": {
-    "start": "node api.js"
+    "start": "node api.js",
+    "test": "jasmine"
   },
   "author": "",
   "license": "ISC",
@@ -18,11 +19,14 @@
     "mongodb": "^3.0.4",
     "node-csv": "^0.1.2",
     "readjson": "^1.1.4",
-    "rosette-api": "^1.9.0",
     "tempfile": "^2.0.0",
     "tempy": "^0.2.1",
     "through": "^2.3.8",
     "through2": "^2.0.3",
     "xlsx": "^0.12.7"
+  },
+  "devDependencies": {
+    "proxyquire": "^2.0.1",
+    "request": "^2.85.0"
   }
 }
