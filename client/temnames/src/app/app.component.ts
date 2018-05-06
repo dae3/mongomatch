@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { SpinnerService } from './spinner.service';
 
 @Component({
   selector: 'app-root',
@@ -6,6 +7,17 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'app';
-  coln = 'data1';
+  public loading : boolean = false;
+
+  constructor(private spinner : SpinnerService) {
+    // spinner.loading.subscribe(this.subHandler);
+  }
+
+  // private subHandler(b : boolean) {
+  //   console.log(`subHandler ${b} ${this.loading}`);
+  //   if (b != this.loading) {
+  //     console.log(`subHandler diff`);
+  //     setTimeout(()=>{this.loading = b})
+  //   }
+  // }
 }

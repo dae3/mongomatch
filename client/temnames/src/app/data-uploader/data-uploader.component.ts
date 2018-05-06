@@ -2,7 +2,6 @@ import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { DatabaseService } from '../database.service';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
-
 @Component({
   selector: 'app-data-uploader',
   templateUrl: './data-uploader.component.html',

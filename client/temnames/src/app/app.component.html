@@ -1,3 +1,10 @@
-
-<app-data-uploader></app-data-uploader>
-<app-collection-list></app-collection-list>
+<div class="outer">
+  <div  class="spinner">
+  <!-- <div *ngIf="spinner.isLoading | async" class="spinner"> -->
+    <img src="/assets/Spinner.png">
+  </div>
+  <div class="content">
+    <app-data-uploader></app-data-uploader>
+    <app-collection-list></app-collection-list>
+  </div>
+</div>

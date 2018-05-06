@@ -5,6 +5,10 @@ import { CollectionComponent } from './collection/collection.component';
 import { DatabaseService, DatabaseApiResponse } from './database.service';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
+import { DataUploaderComponent } from './data-uploader/data-uploader.component';
+import { ResultGridComponent } from './result-grid/result-grid.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { SpinnerService } from './spinner.service';
 
 xdescribe('AppComponent', () => {
 
@@ -26,11 +30,16 @@ xdescribe('AppComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports : [ HttpClientModule ],
+      imports : [ HttpClientModule, FormsModule, ReactiveFormsModule ],
       declarations: [
-        AppComponent, CollectionComponent, CollectionListComponent
+        AppComponent,
+        CollectionComponent,
+        CollectionListComponent,
+        DataUploaderComponent,
+        ResultGridComponent
       ],
       providers : [
+        SpinnerService,
         { provide: DatabaseService, useValue: databaseServiceStub },
         HttpClient
       ]

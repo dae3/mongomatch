@@ -1,0 +1,14 @@
+<div class="component">
+  <h1 *ngIf="results.length > 0">results</h1>
+  <table>
+    <tr *ngFor="let r of results">
+      <td>{{r.name}}</td>
+      <td>
+        <p *ngFor="let match of r.matchedNames">
+          <span class="goodMatch" *ngIf="match.score <= 3">{{match.name}}: {{match.score}}</span>
+          <span class="badMatch" *ngIf="match.score > 5">{{match.name}}: {{match.score}}</span>
+        </p>
+      </td>
+    </tr>
+  </table>
+</div>

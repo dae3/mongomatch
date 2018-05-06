@@ -1,0 +1,19 @@
+div.outer {
+  position: relative;
+  width: 100%;
+}
+
+div.content {
+  position: absolute;
+  width: 100%;
+}
+
+div.spinner {
+  position: absolute;
+  width: 90%;
+  height: 90%;
+  z-index: 10;
+  border: 1px red solid;
+  background-color: red;
+  /* opacity: 0.8; */
+}

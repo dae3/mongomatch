@@ -1,0 +1,42 @@
+* {
+  font-family: sans-serif;
+  font-size: 10pt;
+}
+
+div.component {
+  border: 1px #cccccc solid;
+  padding: 5px;
+  background-color: #cccccc;
+}
+
+h1 {
+  font-size: 12pt;
+  margin: 0;
+}
+
+body {
+  border: 1px black  solid;
+}
+
+span.goodMatch { color: green; }
+span.badMatch { color: grey; }
+
+
+table {
+  font-family: sans-serif;
+  font-size: small;
+}
+
+table, th, tr, td {
+  border-collapse: collapse;
+  border: 1px solid grey;
+}
+
+table tr {
+  vertical-align: top;
+}
+
+table p {
+  margin-top:  0;
+  margin-bottom: 0;
+}

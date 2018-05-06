@@ -1,21 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpHandler, HttpInterceptor, HttpHeaders, HttpEvent, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { Observable, Observer } from 'rxjs/Observable';
+import { Observable } from 'rxjs/Observable';
+import { Observer } from 'rxjs/Observer';
+import { Subject } from 'rxjs/Subject';
 import { of } from 'rxjs/observable/of';
 
-// @Injectable()
-// export class httpObserver implements HttpInterceptor {
-//
-//   intercept(req: HttpRequest<any>, next: HttpHandler) : Observable<HttpEvent<any>> {
-//     return next.handle(req)
-//     .pipe(
-//       tap(() => this.loading.emit(true)),
-//       finalize(() => this.loading.emit(false))
-//     )
-//   }
-//
-//   loading : EventEmitter<boolean> = new EventEmitter<boolean>();
-// }
 
 @Injectable()
 export class DatabaseService {
@@ -24,16 +13,17 @@ export class DatabaseService {
     'status','crossmatch','scoreCrossmatch','collection','data'
   ]
 
-  constructor(private http : HttpClient) { }
+  constructor(private http : HttpClient) {
+    this.loading = new Subject();
+    // hobs.loading.subscribe(b=>this.loading.next(b));
+  }
 
   public data() {
     let v = { element : { subelement : 'dummy'}};
     return v;
   }
 
-  public subscribe(observer : observer) {
-    
-  }
+  public loading : Subject<boolean>;
 
   public upload(name: string, namefield: string, file: File) : Observable<DatabaseApiResponse> {
     const data = new FormData();
@@ -43,7 +33,7 @@ export class DatabaseService {
     data.set('sheet', 'Data 1');
     data.set('file', file);
     const headers = new HttpHeaders({'Content-Type': 'application/x-www-form-urlencoded'});
-    return this.http.post<DatabaseApiResponse>(`${this.URL}/data/${name}`, data, headers);
+    return this.http.post<DatabaseApiResponse>(`${this.URL}/data/${name}`, data, { headers : headers });
   }
 
   public delete(collection: string) : Observable<DatabaseApiResponse> {

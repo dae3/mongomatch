@@ -58,20 +58,6 @@ describe('DatabaseService', () => {
     expect(() => {service.apiCall('NotARealEndpoint')}).toThrow(new Error('NotARealEndpoint is not a valid endpoint'))
   }));
 
-  it('should have Observable loading status', fakeAsync(inject([DatabaseService], (db: DatabaseService) => {
-    const observer = {
-      next(isLoading : boolean) {}
-    };
-    spyOn(observer, 'next');
-    db.subscribe(observer);
-    db.getCollection('something');
-    tick();
-    expect(observer.next).toHaveBeenCalledWith(true);
-    tick();
-    expect(observer.next).toHaveBeenCalledWith(false);
-
-  })));
-
   it('should return status', inject([DatabaseService], (service: DatabaseService) => {
     let x : DatabaseApiResponse = { status: 'something', collection : [] };
 
