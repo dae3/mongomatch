@@ -1,87 +1,65 @@
+'use strict';
 const express = require('express')
 const api = express.Router()
-const Busboy = require('busboy');
-const tempy = require('tempy');
-const fs = require('fs');
 const xlsx = require('xlsx');
+const multer = require('multer');
+const upload = multer();
 const db = require('./db');
 const debug = require('debug')('temnames:api-data');
 
-api.post('/:number([1-9]{1})', (req, res) => {
-  var busboy = new Busboy({ headers : req.headers });
-	var book;
+api.post('/:number([1-9]{1})',upload.single('file'), (req, res) => {
   var writePromises = [];
-  var dataNumber = req.params.number;
-  var fieldMap = null;
-  var fileType = null;
-  var nameField = null;
-	var sheetName = null;
 
-  busboy.on('field', (fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) => {
-    switch (fieldname) {
-      case 'map':
-        try { fieldMap = JSON.parse(val); } catch (ex) {  }
-        break;
-      case 'type':
-        if (val == 'xlsx' || val == 'csv') { fileType = val }
-      break;
-      case 'namefield':
-          nameField = val;
-      break;
-			case 'sheet':
-				sheetName = val;
-      default:
-      // do nothing
-      break;
-    }
-  });
+	if (isValidRequest(req)) {
+		var docArray = jsonFromExcel(req.file, req.body.sheet);
+		docArray.forEach((doc) => {
+				doc.names = normaliseNames(doc[req.body.namefield]);
+				writePromises.push(db.writeDoc(`data${req.params.number}`, doc))
+			});
+		Promise.all(writePromises).then(() => {
+			res.status(200).end(`${writePromises.length} documents written`);
+		});
 
-	var mapRow = function(row) {
-		var r = {};
+	} else {
+		res.status(400).end();
+	}
 
-		fieldMap.forEach((mapEnt) => { r[mapEnt[1]] = row[mapEnt[0]] });
-		r.names = r[nameField].replace(',',' ').replace('.',' ').replace('  ',' ').toLowerCase().split(' ');
-		return r;
-	};
-
-
-  busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-		console.log(`receiving file ${filename}`);
-    let fn = `${tempy.file()}.xlsx`;
-    let f = fs.createWriteStream(fn);
-
-    file.on('end', () => {
-				debug(`file ${fn} received, ${f.bytesWritten}, xlsx processing starting`);
-        book = xlsx.readFile(fn);
-        fs.unlinkSync(fn);
-    });
-
-			file.pipe(f);
-  });
-
-  busboy.on('finish', () => {
-    if (fieldMap && fileType && nameField && sheetName) {
-
-			if (fileType == 'csv') { res.statusCode = 500; res.end('CSV not implemented yet') }
-			else {
-				var sheet = book.Sheets[sheetName];
-				var docArray = xlsx.utils.sheet_to_json(sheet).map(mapRow);
-				console.log(`xlsx processing done, ${docArray.length} rows`);
-				docArray.forEach((doc) => writePromises.push(db.writeDoc(`data${dataNumber}`, doc)));
-
-				console.log(`request processing done, async waiting on db commit for ${writePromises.length} documents`)
-	      res.statusCode = 200;
-				res.write(`writing ${writePromises.length} documents\n`);
-	      Promise.all(writePromises).then(() => { res.end(`${writePromises.length} documents written`); console.log('db async wait done'); } );
-			}
-    } else {
-			console.log('param problem in request')
-      res.statusCode = 400;
-      res.end();
-    }
-  });
-
-  req.pipe(busboy);
 });
+
+function normaliseNames(name) {
+	return name
+		.replace(',',' ')
+		.replace('.',' ')
+		.replace('  ', ' ')
+		.toLowerCase()
+		.split(' ');
+}
+
+function jsonFromExcel(excelFile, sheetName) {
+		var book = xlsx.read(excelFile.buffer);
+		var sheet = book.Sheets[sheetName];
+		return xlsx.utils.sheet_to_json(sheet);
+}
+
+function isValidRequest(req) {
+
+	var fieldsValid = 
+		(typeof req.body.namefield === 'string') && 
+		(typeof req.body.sheet === 'string');
+
+	var fileValid = (typeof req.file === 'object');
+
+	var nfValid = false;
+	var sheetValid = false;
+	if (fileValid && fieldsValid) {
+		var j = jsonFromExcel(req.file, req.body.sheet);
+		sheetValid = Object.keys(xlsx.read(req.file.buffer).Sheets).includes(req.body.sheet);
+		if (sheetValid) {
+			nfValid = Object.keys(j[0]).includes(req.body.namefield);
+		}
+	}
+
+	return fieldsValid && fileValid && nfValid && sheetValid;
+}
 
 module.exports = api;
