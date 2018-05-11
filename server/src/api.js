@@ -8,6 +8,8 @@ const transforms = require('./transforms');
 const through2 = require('through2');
 const lev = require('js-levenshtein');
 
+var server;
+
 api.use(function(req, res, next)  {
   res.set('Access-Control-Allow-Origin', process.env.CORS_FROM);
   res.set('Access-Control-Allow-Methods', "GET, POST, DELETE, PUT");
@@ -99,11 +101,12 @@ api.get('/collections', (req, res) => {
   })
 })
 
-exports.close = function() { api.close() };
+exports.close = function() { console.log('**close**'); server.close() };
 
 // POST router for /data
 api.use('/data', dataRouter);
 
+
 db.connect('mongodb://db:27017', 'temnames')
-.then(api.listen(process.env.API_PORT,() => {}))
+.then(server = api.listen(process.env.API_PORT,() => {}))
 .catch((ex) => { console.log(ex); process.exit(-1) });
