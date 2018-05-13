@@ -49,7 +49,7 @@ xdescribe('ResultGridComponent', () => {
 
   it('should display a row for each result', () => {
     const col2expected = (data : Array<object>, index: number) =>
-      data[index].matchedNames.map((d)=>`<p>${d.name}: ${d.score}</p>`)
+      data[index]['matchedNames'].map((d)=>`<p>${d.name}: ${d.score}</p>`)
       .reduce((a,i)=>a+i)
 
     component.results = dummyCompareResult;

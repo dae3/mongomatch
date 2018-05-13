@@ -74,28 +74,26 @@ xdescribe('CollectionListComponent', () => {
     var actual = [];
     var expected = ['Choose a collection'];
     Array.prototype.push.apply(expected, dummyDbCollections);
-    elt.querySelectorAll('select#collection1 option').forEach( e=>actual.push(e.label) );
+    elt.querySelectorAll('select#collection1 option').forEach( e=>actual.push((e as HTMLOptionElement).label) );
     expect(actual).toEqual(expected);
 
     var actual = [];
     var expected = ['Choose a collection'];
     Array.prototype.push.apply(expected, dummyDbCollections);
-    elt.querySelectorAll('select#collection2 option').forEach( e=>actual.push(e.label) );
+    elt.querySelectorAll('select#collection2 option').forEach( e=>actual.push((e as HTMLOptionElement).label) );
     expect(actual).toEqual(expected);
   })
 
   it('should have a compare button enabled once collections are chosen', () => {
-    const button = elt.querySelector('button') as HTMLButton;
-    expect(component.collection1).toBe(undefined);
-    expect(component.collection2).toBe(undefined);
+    const button = elt.querySelector('button') as HTMLButtonElement;
     expect(button.disabled).toBeTruthy();
 
-    elt.querySelector('select#collection1').value = dummyDbCollections[0];
+    (elt.querySelector('select#collection1') as HTMLSelectElement).value = dummyDbCollections[0];
     elt.querySelector('select#collection1').dispatchEvent(new Event('change'));
     fixture.detectChanges();
     expect(button.disabled).toBeTruthy();
 
-    elt.querySelector('select#collection2').value = dummyDbCollections[1];
+    (elt.querySelector('select#collection2') as HTMLSelectElement).value = dummyDbCollections[1];
     elt.querySelector('select#collection2').dispatchEvent(new Event('change'));
     fixture.detectChanges();
     expect(button.disabled).not.toBeTruthy();
@@ -104,19 +102,19 @@ xdescribe('CollectionListComponent', () => {
   it('compares 2 selected collections', () => {
     const compareSpy = spyOn(fixture.debugElement.injector.get(DatabaseService), 'compare').and.callThrough();
 
-    elt.querySelector('select#collection1').value = dummyDbCollections[0];
+    (elt.querySelector('select#collection1') as HTMLSelectElement).value = dummyDbCollections[0];
     elt.querySelector('select#collection1').dispatchEvent(new Event('change'));
 
-    elt.querySelector('select#collection2').value = dummyDbCollections[1];
+    (elt.querySelector('select#collection2') as HTMLSelectElement).value = dummyDbCollections[1];
     elt.querySelector('select#collection2').dispatchEvent(new Event('change'));
     elt.querySelector('button').dispatchEvent(new Event('click'));
     expect(compareSpy).toHaveBeenCalledWith(dummyDbCollections[0], dummyDbCollections[1]);
   });
 
   it('displays comparison results', () => {
-    elt.querySelector('select#collection1').value = dummyDbCollections[0];
+    (elt.querySelector('select#collection1') as HTMLSelectElement).value = dummyDbCollections[0];
     elt.querySelector('select#collection1').dispatchEvent(new Event('change'));
-    elt.querySelector('select#collection2').value = dummyDbCollections[1];
+    (elt.querySelector('select#collection2') as HTMLSelectElement).value = dummyDbCollections[1];
     elt.querySelector('select#collection2').dispatchEvent(new Event('change'));
     elt.querySelector('button').dispatchEvent(new Event('click'));
     fixture.detectChanges();

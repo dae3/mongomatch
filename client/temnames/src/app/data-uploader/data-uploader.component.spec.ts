@@ -16,7 +16,7 @@ xdescribe('DataUploaderComponent', () => {
       dummyDbCollections = dummyDbCollections.filter(a=>a!=collection);
       return of({status:'ok', collection:[]});
     },
-    upload: (data: object) => {}
+    upload: (name: string, namefield: string, file: File) => of({status:'ok', collection:[]})
   };
 
   beforeEach(async(() => {
@@ -53,17 +53,17 @@ xdescribe('DataUploaderComponent', () => {
 
     expect(submit().disabled).toBeTruthy();
 
-    element.querySelector('input[formControlName=\'name\']').value = 'collectionname';
+    (element.querySelector('input[formControlName=\'name\']') as HTMLInputElement).value = 'collectionname';
     element.querySelector('input[formControlName=\'name\']').dispatchEvent(new Event('input'));
     fixture.detectChanges();
     expect(submit().disabled).toBeTruthy();
 
-    element.querySelector('input[formControlName=\'fileValidator\']').value = 'something';
+    (element.querySelector('input[formControlName=\'fileValidator\']') as HTMLInputElement).value = 'something';
     element.querySelector('input[formControlName=\'fileValidator\']').dispatchEvent(new Event('input'));
     fixture.detectChanges();
     expect(submit().disabled).toBeTruthy();
 
-    element.querySelector('input[formControlName=\'namefield\']').value = 'something';
+    (element.querySelector('input[formControlName=\'namefield\']') as HTMLInputElement).value = 'something';
     element.querySelector('input[formControlName=\'namefield\']').dispatchEvent(new Event('input'));
     fixture.detectChanges();
     expect(submit().disabled).not.toBeTruthy();
@@ -74,15 +74,15 @@ xdescribe('DataUploaderComponent', () => {
     // a dummy valid into the  hidden validator field and expect an undefined
     // file on the  database call
     const dspy = spyOn(fixture.debugElement.injector.get(DatabaseService), 'upload').and.returnValue(of('foo'));
-    element.querySelector('input[formControlName=\'name\']').value = 'collectionname';
+    (element.querySelector('input[formControlName=\'name\']') as HTMLInputElement).value = 'collectionname';
     element.querySelector('input[formControlName=\'name\']').dispatchEvent(new Event('input'));
-    element.querySelector('input[formControlName=\'fileValidator\']').value = 'filename';
+    (element.querySelector('input[formControlName=\'fileValidator\']') as HTMLInputElement).value = 'filename';
     element.querySelector('input[formControlName=\'fileValidator\']').dispatchEvent(new Event('input'));
-    element.querySelector('input[formControlName=\'namefield\']').value = 'something';
+    (element.querySelector('input[formControlName=\'namefield\']') as HTMLInputElement).value = 'something';
     element.querySelector('input[formControlName=\'namefield\']').dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    element.querySelector('form button[type=\'submit\']').click();
+    (element.querySelector('form button[type=\'submit\']') as HTMLButtonElement).click();
     expect(dspy).toHaveBeenCalledWith('collectionname','something',undefined);
   })
 
