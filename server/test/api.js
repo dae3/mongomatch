@@ -8,56 +8,46 @@ const expect = chai.expect;
 const fs = require('fs');
 const through2 = require('through2');
 
-describe.skip('base api', () => {
+describe('base api', () => {
   const db = {
-    connect: function(url, dbname) {
-      return Promise.resolve();
-    },
-	deleteCollection: () => {},
+    connect: sinon.stub().resolves(),
+		deleteCollection: sinon.fake.resolves(),
     '@noCallThru': true
   };
 
 	// api require inside before() to prevent it running
 	// when suite is .skipped
+	var api;
+	var URL;
 	before(() => {
 		process.env.API_PORT = '8800';
-		const api = proxyquire('../src/api', {
-			'./db' : db
-		});
+		process.env.clientUrl = 'http://client.served.from.here:1234';
+		api = proxyquire('../src/api', { './db' : db });
+		URL = `http://localhost:${process.env.API_PORT}`;
 	});
 
-  const URL = `http://localhost:${process.env.API_PORT}`;
-
-	const textToObjTransform = through2.obj(function(ch,enc,cb) {
+	const textToObjTransform = through2.obj(function(ch,enc,cb) { 
 	// naive implementation requires entire string on 1 line
 		this.push(JSON.parse(ch));
 		cb();
 	});
 	const fakePipeline = [ { $lookup: { from: ''} }];
 
-  beforeEach(() => {
 
-  });
+	after(() => { 
+		api.close() 
+		var f = fs.createWriteStream('../client/temnames/src/app/tickle.ts');
+		f.write('// boO');
+		f.close();
+	});
 
-	after(() => { api.close() });
-
-  it('should return status', function(done) {
-    req.get(`${URL}/status`, function(err, res, body) {
-		expect(res.statusCode).to.equal(200);
-		expect(body).to.equal(JSON.stringify({status:'something'}));
-		done();
-    });
-  });
-
-  it('should delete a collection', function(done) {
-	db.deleteCollection = sinon.fake.resolves({});
-	
-    req.delete(`${URL}/collection/some-collection`, function(err, res, body) {
-		expect(db.deleteCollection.calledWith('some-collection')).to.be.true;
-		expect(res.statusCode).to.equal(200);
-		done();
-    });
-  });
+	it('should start and connect to the database', function(done) {
+		expect(db.connect).to.have.been.calledWith('mongodb://db:27017','temnames');
+		req.get(`${URL}`, function(err, res, body) {
+			expect(res.statusCode).to.equal(404);
+			done();
+		});
+	});
 
   it('should match two collections', function(done) {
 		const fakePipeline = [ { $lookup: { from: ''} }];
@@ -130,11 +120,23 @@ describe.skip('base api', () => {
 		);
 
 		req.get(`${URL}/collections`, function(err, res, body) {
-			sinon.assert.calledOnce(db.getAllCollections);
 			expect(res.statusCode).to.equal(200);
-			done();
+			sinon.assert.calledOnce(db.getAllCollections);
+			done(); // ha
 		});
-
 	});
 
+	it('should return CORS headers', function(done) {
+		var opts = {
+			headers : { Origin: 'http://client.served.from.here:1234' },
+			url: `${URL}/collections`
+		};
+		var callback = (err, res, body) => {
+			expect(res.headers['access-control-allow-origin'])
+				.to.equal(process.env.clientUrl);
+			done();
+		};
+
+		req.get(opts, callback);
+	});
 });

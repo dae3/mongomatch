@@ -7,21 +7,18 @@ const debug = require('debug')('temnames:api');
 const transforms = require('./transforms');
 const through2 = require('through2');
 const lev = require('js-levenshtein');
-
+const corser = require('corser');
 var server;
 
-api.use(function(req, res, next)  {
-  res.set('Access-Control-Allow-Origin', process.env.CORS_FROM);
-  res.set('Access-Control-Allow-Methods', "GET, POST, DELETE, PUT");
-  next();
-})
-
-api.get('/status', (req, res) => {
-  res.end(JSON.stringify({ status: 'something'}));
-});
+api.use(corser.create(
+	{
+		origins: [ process.env.clientUrl ? process.env.clientUrl : '*' ],
+		methods: ['GET','POST','DELETE']
+	}
+)); 
 
 api.delete('/collection/:name', (req, res) => {
-  debug(`DELETE /${req.params.name}`);
+  debug(`DELETE /${req.params.name}`); //
   db.deleteCollection(req.params.name)
   .then((dropRes) => { res.statausCode = 200; res.end(); })
   .catch((err) => {
@@ -101,7 +98,7 @@ api.get('/collections', (req, res) => {
   })
 })
 
-exports.close = function() { console.log('**close**'); server.close() };
+exports.close = function() { server.close() };
 
 // POST router for /data
 api.use('/data', dataRouter);
