@@ -54,21 +54,6 @@ describe('DatabaseService', () => {
 
   }));
 
-  it('should error on invalid API calls', inject([DatabaseService], (service: DatabaseService) => {
-    expect(() => {service.apiCall('NotARealEndpoint')}).toThrow(new Error('NotARealEndpoint is not a valid endpoint'))
-  }));
-
-  it('should return status', inject([DatabaseService], (service: DatabaseService) => {
-    let x : DatabaseApiResponse = { status: 'something', collection : [] };
-
-    service.apiCall('status').subscribe(data=>expect(data).toEqual(x));
-
-    const req = httpTestingController.expectOne(`${BASEURL}/status`);
-    expect(req.request.method).toBe('GET');
-
-    req.flush(x);
-  }));
-
   it('should return a collection', inject([DatabaseService], (db : DatabaseService) => {
     let resp : Array<Object> = [
         { firstRecordFirstThing: 'thing', firstRecordSecondThing: 'thingo' },

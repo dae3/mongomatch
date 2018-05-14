@@ -30,8 +30,6 @@ export class DatabaseService {
     data.set('namefield', namefield);
     data.set('sheet', 'Data 1');
     data.set('file', file);
-		//const headers = new HttpHeaders({'Content-Type': 'multipart/form-data'});
-		//return this.http.post<DatabaseApiResponse>(`${this.URL}/collection/${name}`, data, { headers : headers });
     return this.http.post<DatabaseApiResponse>(`${this.URL}/collection/${name}`, data);
   }
 
@@ -39,14 +37,6 @@ export class DatabaseService {
     return this.http.delete<DatabaseApiResponse>(`${this.URL}/collection/${collection}`);
   }
 
-  public apiCall(endPoint : string, parameters? : Array<string>) : Observable<DatabaseApiResponse> {
-
-    if (!this.ENDPOINTS.includes(endPoint)) {
-      throw new Error(`${endPoint} is not a valid endpoint`);
-    } else {
-      return this.http.get<DatabaseApiResponse>(`${this.URL}/${endPoint}`);
-    }
-  }
 
   public getCollection(collectionName : string) : Observable<Array<Object>> {
     return  this.http.get<Array<Object>>(`${this.URL}/collection/${collectionName}`);
