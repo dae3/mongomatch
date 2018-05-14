@@ -133,7 +133,7 @@ describe('base api', () => {
 		};
 		var callback = (err, res, body) => {
 			expect(res.headers['access-control-allow-origin'])
-				.to.equal(process.env.clientUrl);
+				.to.equal(process.env.CLIENT_URL);
 			done();
 		};
 
