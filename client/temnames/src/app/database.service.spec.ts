@@ -27,8 +27,8 @@ describe('DatabaseService', () => {
   it('should delete a collection', inject([DatabaseService], (db: DatabaseService) => {
     let res : DatabaseApiResponse = { status: 'ok', collection: [] };
 
-    db.delete('aCollectionThatExists').subscribe(r=>expect(r.status).toBe('ok'));
-    const req = httpTestingController.expectOne(`${BASEURL}/collection/aCollectionThatExists`);
+    db.delete('2').subscribe(r=>expect(r.status).toBe('ok'));
+    const req = httpTestingController.expectOne(`${BASEURL}/collection/2`);
     expect(req.request.method).toBe('DELETE');
     req.flush(res);
 
@@ -39,7 +39,7 @@ describe('DatabaseService', () => {
 
     let f = new File(['this is the file content'], 'andItHasAName.ext');
     db.upload('collectionname', 'somefield', f).subscribe(r => { expect(r.status).toBe('ok') });
-    const req = httpTestingController.expectOne(`${BASEURL}/data/collectionname`);
+    const req = httpTestingController.expectOne(`${BASEURL}/collection/collectionname`);
     expect(req.request.method).toBe('POST');
     req.flush(res);
   }));

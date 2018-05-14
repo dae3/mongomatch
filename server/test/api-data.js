@@ -23,7 +23,12 @@ describe('upload api', () => {
 			'@global': true
 	};
 
-	after(() => { api.close() });
+	after(() => {
+		api.close();
+		var f = fs.createWriteStream('../client/temnames/src/app/tickle.ts');
+		f.write('// Dummy file to trigger client unit testing from api unit testing');
+		f.close();
+	});
 
 	beforeEach(function() {
 		fakeUpload = {
@@ -41,7 +46,7 @@ describe('upload api', () => {
 	
 	const reqPostFake = function(statusExpectation, callback) {
 		req.post(
-			{url: `${URL}/data/1`, formData: fakeUpload},
+			{url: `${URL}/collection/1`, formData: fakeUpload},
 			function(err, res, body) {
 				expect(res.statusCode).to.equal(statusExpectation);
 				callback();
@@ -76,7 +81,7 @@ describe('upload api', () => {
 
 	it('should upload a file to a collection', function(done) {
 		req.post(
-			{url: `${URL}/data/1`, formData: fakeUpload},
+			{url: `${URL}/collection/1`, formData: fakeUpload},
 			function(err, res, body) {
 				expect(err).to.be.null;
 				expect(res.statusCode).to.equal(200);

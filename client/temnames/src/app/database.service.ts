@@ -27,13 +27,12 @@ export class DatabaseService {
 
   public upload(name: string, namefield: string, file: File) : Observable<DatabaseApiResponse> {
     const data = new FormData();
-    data.set('map', JSON.stringify([[namefield, 'name']]));
     data.set('namefield', namefield);
-    data.set('type', 'xlsx');
     data.set('sheet', 'Data 1');
     data.set('file', file);
-    const headers = new HttpHeaders({'Content-Type': 'application/x-www-form-urlencoded'});
-    return this.http.post<DatabaseApiResponse>(`${this.URL}/data/${name}`, data, { headers : headers });
+		//const headers = new HttpHeaders({'Content-Type': 'multipart/form-data'});
+		//return this.http.post<DatabaseApiResponse>(`${this.URL}/collection/${name}`, data, { headers : headers });
+    return this.http.post<DatabaseApiResponse>(`${this.URL}/collection/${name}`, data);
   }
 
   public delete(collection: string) : Observable<DatabaseApiResponse> {

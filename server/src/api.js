@@ -12,15 +12,15 @@ var server;
 
 api.use(corser.create(
 	{
-		origins: [ process.env.clientUrl ? process.env.clientUrl : '*' ],
+		origins: [ process.env.CLIENT_URL ? process.env.CLIENT_URL : '*' ],
 		methods: ['GET','POST','DELETE']
 	}
 )); 
 
-api.delete('/collection/:name', (req, res) => {
-  debug(`DELETE /${req.params.name}`); //
-  db.deleteCollection(req.params.name)
-  .then((dropRes) => { res.statausCode = 200; res.end(); })
+api.delete('/collection/:number([1-9]{1})', (req, res) => {
+  debug(`DELETE /${req.params.number}`); //
+  db.deleteCollection(`data${req.params.number}`)
+  .then((dropRes) => { res.status(200).end(); })
   .catch((err) => {
     res.statusCode = 404;
     res.end(err.toString());
@@ -36,9 +36,9 @@ function getCrossmatch(fromCollection, toCollection) {
    })
 }
 
-api.get('/crossmatch/:from/:to', (req, res) => {
+api.get('/crossmatch/:from([1-9]{1})/:to([1-9]{1})', (req, res) => {
   debug(`/crossmatch ${req.params.from},${req.params.to}`);
-  getCrossmatch(req.params.from, req.params.to)
+  getCrossmatch(`data${req.params.from}`,`data${req.params.to}`)
   .then((cursor) => cursor.pipe(transforms.documentToJSON()).pipe(res))
   .catch((e) => {
     res.statusCode = 500
@@ -46,7 +46,7 @@ api.get('/crossmatch/:from/:to', (req, res) => {
   });
 });
 
-api.get('/scoreCrossmatch/:from/:to', (req, res) => {
+api.get('/scoreCrossmatch/:from([1-9]{1})/:to([1-9]{1})', (req, res) => {
   debug(`/scoreCrossmatch ${req.params.from},${req.params.to}`);
   const scoreTransform = through2.obj(function(ch,enc,cb) {
     let basename = ch.names.reduce((a,v) => a += ` ${v}`).toLowerCase();
@@ -73,19 +73,10 @@ api.get('/scoreCrossmatch/:from/:to', (req, res) => {
 
 });
 
-api.get('/collection/:name', (req, res) => {
-  db.promiseTable(req.params.name)
+api.get('/collection/:number([1-9]{1})', (req, res) => {
+  db.promiseTable(`data${req.params.number}`)
   .then((table) => table.find().pipe(transforms.documentToJSON()).pipe(res))
   .catch((e) => { res.statusCode = 500; res.end(e); });
-});
-
-api.delete('/data/:number([1-9]{1})', (req, res) => {
-	 	db.deleteCollection(`data${req.params.number}`)
-		.then(res.end(`deleted data${req.params.number}`))
-		.catch((e) => {
-			res.statusCode = 500;
-			res.end(e.toString());
-		});
 });
 
 
@@ -101,7 +92,7 @@ api.get('/collections', (req, res) => {
 exports.close = function() { server.close() };
 
 // POST router for /data
-api.use('/data', dataRouter);
+api.use('/collection', dataRouter);
 
 
 db.connect('mongodb://db:27017', 'temnames')

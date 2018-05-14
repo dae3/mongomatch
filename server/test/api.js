@@ -21,7 +21,7 @@ describe('base api', () => {
 	var URL;
 	before(() => {
 		process.env.API_PORT = '8800';
-		process.env.clientUrl = 'http://client.served.from.here:1234';
+		process.env.CLIENT_URL = 'http://client.served.from.here:1234';
 		api = proxyquire('../src/api', { './db' : db });
 		URL = `http://localhost:${process.env.API_PORT}`;
 	});
@@ -36,9 +36,9 @@ describe('base api', () => {
 
 	after(() => { 
 		api.close() 
-		var f = fs.createWriteStream('../client/temnames/src/app/tickle.ts');
-		f.write('// boO');
-		f.close();
+//		var f = fs.createWriteStream('../client/temnames/src/app/tickle.ts');
+//		f.write('// Dummy file to trigger client unit testing from api unit testing');
+//		f.close();
 	});
 
 	it('should start and connect to the database', function(done) {
@@ -50,7 +50,7 @@ describe('base api', () => {
 	});
 
   it('should match two collections', function(done) {
-		const fakePipeline = [ { $lookup: { from: ''} }];
+		const fakePipeline = [ { $lookup: { from: 'data2'} }];
 		const fakeDocsStream = new stream.Readable({objectMode: true});
 		[ { a: 'a', b:'b', c:'c'}, { a: 'a', b:'b', c:'c'}, null ].forEach(
 			(e) => fakeDocsStream.push(e)
@@ -59,10 +59,10 @@ describe('base api', () => {
 		db.promisfyReadJson = sinon.fake.resolves(fakePipeline);
 		db.promisifyAggregateCollection = sinon.fake.resolves(fakeDocsStream);
 
-		req.get(`${URL}/crossmatch/somefrom/someto`, function(err, res, body) {
+		req.get(`${URL}/crossmatch/1/2`, function(err, res, body) {
 				expect(res.statusCode).to.equal(200);
 				sinon.assert.calledWith(db.promisfyReadJson, './crossmatch.json');
-				sinon.assert.calledWith(db.promisifyAggregateCollection, 'somefrom', fakePipeline);
+				sinon.assert.calledWith(db.promisifyAggregateCollection, 'data1', fakePipeline);
 				done();
 		});
   });
@@ -73,7 +73,7 @@ describe('base api', () => {
 		db.promisfyReadJson = sinon.fake.resolves(fakePipeline);
 		db.promisifyAggregateCollection = sinon.fake.resolves(fakeDocsStream);
 
-		req.get(`${URL}/scoreCrossmatch/somefrom/someto`, function(err, res, body) {
+		req.get(`${URL}/scoreCrossmatch/1/2`, function(err, res, body) {
 				expect(res.statusCode).to.equal(200);
 				var bodyObj = JSON.parse(body)[0];
 				expect(bodyObj).to.have.property('matchedNames');
@@ -98,18 +98,18 @@ describe('base api', () => {
 			}
 		};
 		db.promiseTable = sinon.fake.resolves(fakeCollection);
-		req.get(`${URL}/collection/something`, function(err, res, body) {
+		req.get(`${URL}/collection/5`, function(err, res, body) {
 			expect(res.statusCode).to.equal(200);
-			sinon.assert.calledWith(db.promiseTable,'something');
+			expect(db.promiseTable).to.be.calledWith('data5');
 			done();
 		});
 	});
 
 	it('should delete a collection', function(done) {
 		db.deleteCollection = sinon.fake.resolves();
-		req.delete(`${URL}/data/1`, function(err, res, body) {
-			sinon.assert.calledWith(db.deleteCollection, 'data1');
+		req.delete(`${URL}/collection/1`, function(err, res, body) {
 			expect(res.statusCode).to.equal(200);
+			expect(db.deleteCollection).to.be.calledWith('data1');
 			done();
 		});
 	});
