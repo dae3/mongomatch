@@ -8,23 +8,48 @@ const db = require('./db');
 const debug = require('debug')('temnames:api-data');
 
 api.post('/:number([1-9]{1})',upload.single('file'), (req, res) => {
+	if (!isValidRequest(req)) {
+		res.status(400).end();
+	} else {
+		writeCollection(
+			`data${req.params.number}`,
+			jsonFromExcel(req.file, req.body.sheet),
+			req.body.namefield
+		)
+		.then(() => res.status(200).end())
+		.catch((e) => res.status(500).end(e.toString()))
+	}
+});
+
+api.post('/:name', upload.single('file'), (req, res) => {
+	if (!isValidRequest(req)) {
+		res.status(400).end();
+	} else {
+		writeCollection(
+			req.params.name,
+			jsonFromExcel(req.file, req.body.sheet),
+			req.body.namefield
+		)
+		.then(() => res.status(200).end())
+		.catch((e) => res.status(500).end(e.toString()))
+	}
+});
+
+function guidForCollection(name) {
+	db.writeDoc('index', { name: name })
+	.then((result) => { return result.ops[0]._id })
+	.catch((err) =>{ throw(new Error(err.toString()))})
+}
+
+function writeCollection(name, data, namefield) {
   var writePromises = [];
 
-	if (isValidRequest(req)) {
-		var docArray = jsonFromExcel(req.file, req.body.sheet);
-		docArray.forEach((doc) => {
-				doc.names = normaliseNames(doc[req.body.namefield]);
-				writePromises.push(db.writeDoc(`data${req.params.number}`, doc))
-			});
-		Promise.all(writePromises).then(() => {
-			res.status(200).end(`${writePromises.length} documents written`);
+	data.forEach((doc) => {
+			doc.names = normaliseNames(doc[namefield]);
+			writePromises.push(db.writeDoc(name, doc))
 		});
-
-	} else {
-		res.status(400).end();
-	}
-
-});
+	return Promise.all(writePromises);
+}
 
 function normaliseNames(name) {
 	return name
@@ -42,7 +67,6 @@ function jsonFromExcel(excelFile, sheetName) {
 }
 
 function isValidRequest(req) {
-
 	var fieldsValid = 
 		(typeof req.body.namefield === 'string') && 
 		(typeof req.body.sheet === 'string');

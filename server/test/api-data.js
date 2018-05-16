@@ -18,24 +18,20 @@ describe('upload api', () => {
 	var fakeUpload;
 	var db = {
 			connect: sinon.stub().resolves(),
-			writeDoc: sinon.fake.resolves(),
+			writeDoc: sinon.stub().resolves(),
 			'@noCallThru': true,
 			'@global': true
 	};
 
-	after(() => {
-		api.close();
-		var f = fs.createWriteStream('../client/temnames/src/app/tickle.ts');
-		f.write('// Dummy file to trigger client unit testing from api unit testing');
-		f.close();
-	});
+	after(() => { api.close() });
 
 	beforeEach(function() {
 		fakeUpload = {
 			namefield: 'Name',
 			sheet: 'Data 1',
-			file: fs.createReadStream('./test/testupload.xlsx')//
+			file: fs.createReadStream('./test/testupload.xlsx')
 		};
+		db.writeDoc.reset();
 	});
 
 	// api require inside before() to prevent it running
@@ -79,15 +75,48 @@ describe('upload api', () => {
 		reqPostFake(400, done);
 	});
 
-	it('should upload a file to a collection', function(done) {
+	it('should upload a file to a named collection', function(done) {
+
+  	req.post(
+			{ url: `${URL}/collection/namedCollection`, formData: fakeUpload },
+			function(err, res, body) {
+				expect(err).to.be.null;
+				expect(res.statusCode).to.equal(200);
+				expect(db.writeDoc.callCount).to.equal(2);
+				expect(db.writeDoc.firstCall).to.be.calledWith(
+					'namedCollection',
+					{ Code: "0401001001",
+						Name: "John Smith",
+						Parent: "IPHONE",
+						Status: "ACTIVE",
+						Type: "IPHONE",
+						Anotherfield: "AnotherValue",
+						names: ['john','smith']
+					});
+				expect(db.writeDoc.secondCall).to.be.calledWith(
+					'namedCollection',
+					{ Code: "0401002002",
+						Name: "Fred Bloggs",
+						Parent: "IPHONE",
+						Status: "ACTIVE",
+						Type: "IPHONE",
+						Anotherfield: "AnotherValue",
+						names: ['fred','bloggs']
+					});
+
+				done();
+			}
+		);
+	});
+
+	it('should upload a file to a numbered collection', function(done) {
 		req.post(
 			{url: `${URL}/collection/1`, formData: fakeUpload},
 			function(err, res, body) {
 				expect(err).to.be.null;
 				expect(res.statusCode).to.equal(200);
 				expect(db.writeDoc.callCount).to.equal(2);
-				sinon.assert.calledWith(
-					db.writeDoc.firstCall,
+				expect(db.writeDoc.firstCall).to.be.calledWith(
 					'data1',
 					{ Code: "0401001001",
 						Name: "John Smith",
@@ -97,8 +126,7 @@ describe('upload api', () => {
 						Anotherfield: "AnotherValue",
 						names: ['john','smith']
 					});
-				sinon.assert.calledWith(
-					db.writeDoc.secondCall,
+				expect(db.writeDoc.secondCall).to.be.calledWith(
 					'data1',
 					{ Code: "0401002002",
 						Name: "Fred Bloggs",
