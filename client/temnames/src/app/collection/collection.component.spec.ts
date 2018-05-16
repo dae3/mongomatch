@@ -48,6 +48,13 @@ xdescribe('CollectionComponent', () => {
    expect(theDiv.firstChild.textContent).toBe(`this collection has ${testApiData.length} documents`);
  })
 
+	it('should load from the database service', () => {
+		const s = spyOn(fixture.debugElement.injector.get(DatabaseService), 'getCollection').and.returnValue(of([{ a1: 'a1', b1: 'b1' },{ a2: 'a2', b2: 'b2' }]));
+		component.name = 'trigger';
+		fixture.detectChanges();
+		expect(s).toHaveBeenCalled();
+	});
+
  it('should not attempt to load if the name is undefined', () => {
    const s = spyOn(fixture.debugElement.injector.get(DatabaseService), 'getCollection').and.returnValue(of('foo'));
    component.name = undefined;

@@ -14,19 +14,7 @@ xdescribe('AppComponent', () => {
 
   const testApiData = [ { one : 1 }, { two : 2 }, { three: 4 } ];
 
-  let databaseServiceStub : Partial<DatabaseService> = {
-    apiCall: (ep:string) => {
-      return Observable.create(obs => {
-          let d : DatabaseApiResponse = {
-            status : "",
-            collection : testApiData
-          };
-          obs.next(d);
-          obs.complete();
-        }
-      )
-    }
-  };
+  let databaseServiceStub : Partial<DatabaseService> = { };
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
