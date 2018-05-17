@@ -46,6 +46,7 @@ function writeCollection(name, data, namefield) {
 
 	data.forEach((doc) => {
 			doc.names = normaliseNames(doc[namefield]);
+			doc.name = doc[namefield];
 			writePromises.push(db.writeDoc(name, doc))
 		});
 	return Promise.all(writePromises);

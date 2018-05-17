@@ -31,7 +31,7 @@ describe('base api', () => {
 		this.push(JSON.parse(ch));
 		cb();
 	});
-	const fakePipeline = [ { $lookup: { from: ''} }];
+//	const fakePipeline = [ { $lookup: { from: ''} }];
 
 
 	after(() => { 
@@ -61,6 +61,7 @@ describe('base api', () => {
 
 		req.get(`${URL}/crossmatch/1/2`, function(err, res, body) {
 				expect(res.statusCode).to.equal(200);
+				expect(res.headers['content-type']).to.equal('application/json; charset=utf-8');
 				sinon.assert.calledWith(db.promisfyReadJson, './crossmatch.json');
 				sinon.assert.calledWith(db.promisifyAggregateCollection, 'data1', fakePipeline);
 				done();
@@ -70,11 +71,16 @@ describe('base api', () => {
 	it('should score two collections', function(done) {
 
 		const fakeDocsStream = fs.createReadStream('./test/matchsample.json').pipe(textToObjTransform);
-		db.promisfyReadJson = sinon.fake.resolves(fakePipeline);
+		db.promisfyReadJson = sinon.fake.resolves( [ { $lookup: { from: ''} } ] );
 		db.promisifyAggregateCollection = sinon.fake.resolves(fakeDocsStream);
 
 		req.get(`${URL}/scoreCrossmatch/1/2`, function(err, res, body) {
 				expect(res.statusCode).to.equal(200);
+				expect(res.headers['content-type']).to.equal('application/json; charset=utf-8');
+				expect(db.promisfyReadJson).to.have.been.calledWith( './crossmatch.json');
+				expect(db.promisifyAggregateCollection).to.have.been.calledWith(
+					'data1', [ { $lookup: { from: 'data2'} } ]
+				);
 				var bodyObj = JSON.parse(body)[0];
 				expect(bodyObj).to.have.property('matchedNames');
 				bodyObj.matchedNames.map((mn)=>{
