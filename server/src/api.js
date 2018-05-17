@@ -39,7 +39,10 @@ function getCrossmatch(fromCollection, toCollection) {
 api.get('/crossmatch/:from([1-9]{1})/:to([1-9]{1})', (req, res) => {
   debug(`/crossmatch ${req.params.from},${req.params.to}`);
   getCrossmatch(`data${req.params.from}`,`data${req.params.to}`)
-  .then((cursor) => cursor.pipe(transforms.documentToJSON()).pipe(res))
+  .then((cursor) => {
+		res.set('content-type','application/json');
+		cursor.pipe(transforms.documentToJSON()).pipe(res);
+	})
   .catch((e) => {
     res.statusCode = 500
     res.end(e.toString());
@@ -49,27 +52,20 @@ api.get('/crossmatch/:from([1-9]{1})/:to([1-9]{1})', (req, res) => {
 api.get('/scoreCrossmatch/:from([1-9]{1})/:to([1-9]{1})', (req, res) => {
   debug(`/scoreCrossmatch ${req.params.from},${req.params.to}`);
   const scoreTransform = through2.obj(function(ch,enc,cb) {
-    let basename = ch.names.reduce((a,v) => a += ` ${v}`).toLowerCase();
-    ch.matchedNames.map((v) => { v.score = lev(basename, v.name.toLowerCase()) });
+		if (ch.hasOwnProperty('names') && ch.hasOwnProperty('matchedNames')) {
+			let basename = ch.names.reduce((a,v) => a += ` ${v}`).toLowerCase();
+			ch.matchedNames.map((v) => { v.score = lev(basename, v.name.toLowerCase()) });
+		}
     this.push(ch);
     cb();
   });
 
-  getCrossmatch(req.params.from, req.params.to)
-  .then(
-    (cursor) => {
-      cursor
-        .on('end', () => debug('/scoreCrossmatch cursor end'))
-        .pipe(scoreTransform)
-        .pipe(transforms.documentToJSON())
-        .pipe(res);
-      debug('/scoreCrossmatch db return');
-    }
-  )
-  .catch((err) => {
-    res.statusCode = 500;
-    res.end(err.toString());
-  })
+  getCrossmatch(`data${req.params.from}`, `data${req.params.to}`)
+  .then( (cursor) => {
+			res.set('content-type','application/json');
+      cursor.pipe(scoreTransform).pipe(transforms.documentToJSON()).pipe(res)
+	})
+  .catch((err) => { res.status(500).end(err.toString()) })
 
 });
 
