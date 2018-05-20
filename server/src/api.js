@@ -91,6 +91,6 @@ exports.close = function() { server.close() };
 api.use('/collection', dataRouter);
 
 
-db.connect('mongodb://db:27017', 'temnames')
+db.connect('mongodb://localhost:27017', 'temnames')
 .then(server = api.listen(process.env.API_PORT,() => {}))
-.catch((ex) => { console.log(ex); process.exit(-1) });
+.catch((ex) => { console.log(ex); process.exit(-2) });

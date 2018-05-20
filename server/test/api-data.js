@@ -19,9 +19,31 @@ describe('upload api', () => {
 	var db = {
 			connect: sinon.stub().resolves(),
 			writeDoc: sinon.stub().resolves(),
+			writeDocs: sinon.stub().resolves(),
 			'@noCallThru': true,
 			'@global': true
 	};
+
+	const dummyDocArray = [
+		{ Code: "0401001001",
+			Name: "John Smith",
+			name: "John Smith",
+			Parent: "IPHONE",
+			Status: "ACTIVE",
+			Type: "IPHONE",
+			Anotherfield: "AnotherValue",
+			names: ['john','smith']
+		},
+		{ Code: "0401002002",
+			Name: "Fred Bloggs",
+			name: "Fred Bloggs",
+			Parent: "IPHONE",
+			Status: "ACTIVE",
+			Type: "IPHONE",
+			Anotherfield: "AnotherValue",
+			names: ['fred','bloggs']
+		}
+	];
 
 	after(() => { api.close() });
 
@@ -31,7 +53,8 @@ describe('upload api', () => {
 			sheet: 'Data 1',
 			file: fs.createReadStream('./test/testupload.xlsx')
 		};
-		db.writeDoc.reset();
+		db.writeDoc.resetHistory();
+		db.writeDocs.resetHistory();
 	});
 
 	// api require inside before() to prevent it running
@@ -82,30 +105,10 @@ describe('upload api', () => {
 			function(err, res, body) {
 				expect(err).to.be.null;
 				expect(res.statusCode).to.equal(200);
-				expect(db.writeDoc.callCount).to.equal(2);
-				expect(db.writeDoc.firstCall).to.be.calledWith(
-					'namedCollection',
-					{ Code: "0401001001",
-						Name: "John Smith",
-						name: "John Smith",
-						Parent: "IPHONE",
-						Status: "ACTIVE",
-						Type: "IPHONE",
-						Anotherfield: "AnotherValue",
-						names: ['john','smith']
-					});
-				expect(db.writeDoc.secondCall).to.be.calledWith(
-					'namedCollection',
-					{ Code: "0401002002",
-						Name: "Fred Bloggs",
-						name: "Fred Bloggs",
-						Parent: "IPHONE",
-						Status: "ACTIVE",
-						Type: "IPHONE",
-						Anotherfield: "AnotherValue",
-						names: ['fred','bloggs']
-					});
-
+				expect(db.writeDocs.callCount).to.equal(1);
+				expect(db.writeDocs).to.be.calledWith(
+					'namedCollection', dummyDocArray
+				);
 				done();
 			}
 		);
@@ -117,29 +120,10 @@ describe('upload api', () => {
 			function(err, res, body) {
 				expect(err).to.be.null;
 				expect(res.statusCode).to.equal(200);
-				expect(db.writeDoc.callCount).to.equal(2);
-				expect(db.writeDoc.firstCall).to.be.calledWith(
-					'data1',
-					{ Code: "0401001001",
-						Name: "John Smith",
-						name: "John Smith",
-						Parent: "IPHONE",
-						Status: "ACTIVE",
-						Type: "IPHONE",
-						Anotherfield: "AnotherValue",
-						names: ['john','smith']
-					});
-				expect(db.writeDoc.secondCall).to.be.calledWith(
-					'data1',
-					{ Code: "0401002002",
-						Name: "Fred Bloggs",
-						name: "Fred Bloggs",
-						Parent: "IPHONE",
-						Status: "ACTIVE",
-						Type: "IPHONE",
-						Anotherfield: "AnotherValue",
-						names: ['fred','bloggs']
-					});
+				expect(db.writeDocs.callCount).to.equal(1);
+				expect(db.writeDocs).to.be.calledWith(
+					'data1', dummyDocArray
+				);
 				done();
 			});
 		});

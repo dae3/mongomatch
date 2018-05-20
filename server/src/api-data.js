@@ -42,16 +42,15 @@ function guidForCollection(name) {
 }
 
 function writeCollection(name, data, namefield) {
-  var writePromises = [];
 
-	data.forEach((doc) => {
-			doc.names = normaliseNames(doc[namefield]);
-			doc.name = doc[namefield];
-			writePromises.push(db.writeDoc(name, doc))
-		});
-	return Promise.all(writePromises);
+	data.forEach((d) => {
+		d.names = normaliseNames(d[namefield]);
+		d.name = d[namefield];
+	});
+	return db.writeDocs(name, data);
 }
 
+// TODO async?? it's probably O(3N) and called lots
 function normaliseNames(name) {
 	return name
 		.replace(',',' ')
@@ -61,10 +60,15 @@ function normaliseNames(name) {
 		.split(' ');
 }
 
+// TODO make this async
+var book, sheet, xl;
 function jsonFromExcel(excelFile, sheetName) {
-		var book = xlsx.read(excelFile.buffer);
-		var sheet = book.Sheets[sheetName];
-		return xlsx.utils.sheet_to_json(sheet);
+		if (book == null || sheet == null || xl == null) {
+			book = xlsx.read(excelFile.buffer);
+			sheet = book.Sheets[sheetName];
+			xl = xlsx.utils.sheet_to_json(sheet);
+		}
+	return xl;
 }
 
 function isValidRequest(req) {
@@ -78,7 +82,7 @@ function isValidRequest(req) {
 	var sheetValid = false;
 	if (fileValid && fieldsValid) {
 		var j = jsonFromExcel(req.file, req.body.sheet);
-		sheetValid = Object.keys(xlsx.read(req.file.buffer).Sheets).includes(req.body.sheet);
+		sheetValid = Object.keys(book.Sheets).includes(req.body.sheet);
 		if (sheetValid) {
 			nfValid = Object.keys(j[0]).includes(req.body.namefield);
 		}

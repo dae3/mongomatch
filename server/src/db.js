@@ -41,7 +41,13 @@ var writeDoc = function(collectionName, document) {
     wdCollectionName = collectionName;
   }
 
-  return wdCollection.insertMany([document]);
+  return wdCollection.insert(document);
+};
+
+var writeDocs = function(collectionName, documents) {
+	return db.collection(collectionName).bulkWrite(
+		documents.map((doc) => { return { insertOne : { document : doc } } })
+	);
 }
 
 const deleteCollection = function(collectionName) {
@@ -70,4 +76,4 @@ var promisifyAggregateCollection = function(inCollectionName, pipeline) {
 
 const getAllCollections = () => db.collections();
 
-module.exports = { connect, table, getAllCollections, promiseTable, createView, writeDoc, promisfyReadJson, promisifyAggregateCollection, deleteCollection, emptyCollection}
+module.exports = { connect, table, getAllCollections, promiseTable, createView, writeDoc, promisfyReadJson, promisifyAggregateCollection, deleteCollection, emptyCollection, writeDocs }

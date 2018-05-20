@@ -2,7 +2,7 @@
   "name": "temnames",
   "version": "1.0.0",
   "description": "",
-  "main": "api.js",
+  "main": "src/api.js",
   "scripts": {
     "start": "node src/api.js",
     "prepublish": "npm run build",
