@@ -54,18 +54,7 @@ describe('DatabaseService', () => {
 
   }));
 
-  it('should return a collection', inject([DatabaseService], (db : DatabaseService) => {
-    let resp : Array<Object> = [
-        { firstRecordFirstThing: 'thing', firstRecordSecondThing: 'thingo' },
-        { secondRecordFirstThing: 'thing', secondRecordSecondThing: 'thingo' },
-        { thirdRecordFirstThing: 'thing', thirdRecordSecondThing: 'thingo' },
-      ];
 
-    db.getCollection('collectionName').subscribe((d) => expect(d).toBe(resp));
-    const req = httpTestingController.expectOne(`${BASEURL}/collection/collectionName`);
-    expect(req.request.method).toBe('GET');
-    req.flush(resp);
-  }));
 
   it('should return a list of all collections in the database', inject([DatabaseService], (db : DatabaseService) => {
     let resp = [ 'collectionTheFirst','collectionTheSecond' ];
@@ -75,7 +64,7 @@ describe('DatabaseService', () => {
     req.flush(resp);
   }));
 
-  it('should compare two collections', inject([DatabaseService], (db : DatabaseService) => {
+	it('should compare two named collections', inject([DatabaseService], (db : DatabaseService) => {
     let resp = [
       {
          _id: 1,
@@ -100,6 +89,36 @@ describe('DatabaseService', () => {
     ];
     db.compare('one','two').subscribe(result=>expect(result).toBe(resp));
     const req = httpTestingController.expectOne(`${BASEURL}/scoreCrossmatch/one/two`);
+    expect(req.request.method).toBe('GET');
+    req.flush(resp);
+
+  }));
+
+	it('should compare two numbered collections', inject([DatabaseService], (db : DatabaseService) => {
+    let resp = [
+      {
+         _id: 1,
+         somefield: 'aaa',
+         name: 'John Doe',
+         names: ['john','doe'],
+         matchedNames: [
+           { name: 'John Smith', score: 1 },
+           { name: 'Jane Doe', score: 2 }
+         ]
+      },
+      {
+         _id: 2,
+         somefield: 'bbb',
+         name: 'Jane Smith',
+         names: ['jane','smith'],
+         matchedNames: [
+           { name: 'John Smith', score: 1 },
+           { name: 'Jane Doe', score: 2 }
+         ]
+      }
+    ];
+    db.compare('data2','data1').subscribe(result=>expect(result).toBe(resp));
+    const req = httpTestingController.expectOne(`${BASEURL}/scoreCrossmatch/2/1`);
     expect(req.request.method).toBe('GET');
     req.flush(resp);
 

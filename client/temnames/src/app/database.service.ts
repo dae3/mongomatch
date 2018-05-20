@@ -46,9 +46,17 @@ export class DatabaseService {
     return this.http.get<Array<string>>(`${this.URL}/collections`);
   }
 
-  public compare(first, second) : Observable<Array<object>> {
-    return this.http.get<Array<object>>(`${this.URL}/scoreCrossmatch/${first}/${second}`);
+  public compare(first: string, second: string) : Observable<Array<object>> {
+		return this.http.get<Array<object>>(
+			`${this.URL}/scoreCrossmatch/${this.collectionName(first)}/${this.collectionName(second)}`
+		);
   }
+
+	collectionName(name: string) : string {
+		let match = name.match(/^data([1-9]{1})/);
+		if (match) { return match[1] }
+		else { return name }
+	}
 }
 
 export class DatabaseApiResponse {
