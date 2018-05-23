@@ -120,10 +120,7 @@ describe('upload api', () => {
 			function(err, res, body) {
 				expect(err).to.be.null;
 				expect(res.statusCode).to.equal(200);
-				expect(db.writeDocs.callCount).to.equal(1);
-				expect(db.writeDocs).to.be.calledWith(
-					'data1', dummyDocArray
-				);
+				expect(db.writeDocs).to.be.calledWith( 'data1', dummyDocArray);
 				done();
 			});
 		});

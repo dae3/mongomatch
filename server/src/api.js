@@ -10,6 +10,10 @@ const lev = require('js-levenshtein');
 const corser = require('corser');
 var server;
 
+// require('blocked-at')((time, stack) => {
+//   console.log(`Blocked for ${time}ms, operation started here:`, stack)
+// });
+
 api.use(corser.create(
 	{
 		origins: [ process.env.CLIENT_URL ? process.env.CLIENT_URL : '*' ],

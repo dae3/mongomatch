@@ -8,7 +8,7 @@ const expect = chai.expect;
 const fs = require('fs');
 const through2 = require('through2');
 
-describe('base api', () => {
+xdescribe('base api', () => {
   const db = {
     connect: sinon.stub().resolves(),
 		deleteCollection: sinon.fake.resolves(),

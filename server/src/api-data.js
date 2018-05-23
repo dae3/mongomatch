@@ -1,44 +1,54 @@
 'use strict';
 const express = require('express')
 const api = express.Router()
-const xlsx = require('xlsx');
 const multer = require('multer');
-const upload = multer();
+const upload = multer({ dest: 'xl/' });
 const db = require('./db');
 const debug = require('debug')('temnames:api-data');
+const Worker = require('tiny-worker');
 
 api.post('/:number([1-9]{1})',upload.single('file'), (req, res) => {
-	if (!isValidRequest(req)) {
-		res.status(400).end();
-	} else {
-		writeCollection(
-			`data${req.params.number}`,
-			jsonFromExcel(req.file, req.body.sheet),
-			req.body.namefield
-		)
-		.then(() => res.status(200).end())
-		.catch((e) => res.status(500).end(e.toString()))
-	}
+	uploadCollection(req, res, `data${req.params.number}`); 
 });
 
 api.post('/:name', upload.single('file'), (req, res) => {
-	if (!isValidRequest(req)) {
-		res.status(400).end();
-	} else {
-		writeCollection(
-			req.params.name,
-			jsonFromExcel(req.file, req.body.sheet),
-			req.body.namefield
-		)
-		.then(() => res.status(200).end())
-		.catch((e) => res.status(500).end(e.toString()))
-	}
+	uploadCollection(req, res, req.params.name);
 });
 
-function guidForCollection(name) {
-	db.writeDoc('index', { name: name })
-	.then((result) => { return result.ops[0]._id })
-	.catch((err) =>{ throw(new Error(err.toString()))})
+function uploadCollection(req, res, collectionName) {
+	var worker = new Worker('./src/xlworker.js');
+
+	worker.onmessage = function(event) {
+		if (!event.data.ok) {
+			res.status(400).end();
+		} else {
+			writeCollection(collectionName, event.data.sheetData, req.body.namefield)
+				.then(() => res.status(200).end())
+				.catch((e) => res.status(500).end(e.toString()))
+		}
+		res.status(200).end();
+		worker.terminate();
+	};
+
+	worker.onerror = function(err) {
+		worker.terminate();
+		res.status(500).end(err.message);
+	}
+
+	// passing a Buffer seems to be broken
+	// perhaps https://github.com/avoidwork/tiny-worker/issues/18
+	// shared file is ugly but workable
+	// multer has committed the file to disk by the time we get here
+
+	if (req.file == undefined) {
+		res.status(400).end()
+	} else {
+		worker.postMessage({
+			filename: `xl/${req.file.filename}`,
+			sheetname: req.body.sheet,
+			namefield: req.body.namefield
+		});
+	}
 }
 
 function writeCollection(name, data, namefield) {
@@ -58,37 +68,6 @@ function normaliseNames(name) {
 		.replace('  ', ' ')
 		.toLowerCase()
 		.split(' ');
-}
-
-// TODO make this async
-var book, sheet, xl;
-function jsonFromExcel(excelFile, sheetName) {
-		if (book == null || sheet == null || xl == null) {
-			book = xlsx.read(excelFile.buffer);
-			sheet = book.Sheets[sheetName];
-			xl = xlsx.utils.sheet_to_json(sheet);
-		}
-	return xl;
-}
-
-function isValidRequest(req) {
-	var fieldsValid = 
-		(typeof req.body.namefield === 'string') && 
-		(typeof req.body.sheet === 'string');
-
-	var fileValid = (typeof req.file === 'object');
-
-	var nfValid = false;
-	var sheetValid = false;
-	if (fileValid && fieldsValid) {
-		var j = jsonFromExcel(req.file, req.body.sheet);
-		sheetValid = Object.keys(book.Sheets).includes(req.body.sheet);
-		if (sheetValid) {
-			nfValid = Object.keys(j[0]).includes(req.body.namefield);
-		}
-	}
-
-	return fieldsValid && fileValid && nfValid && sheetValid;
 }
 
 module.exports = api;
