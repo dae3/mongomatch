@@ -22,15 +22,19 @@ api.use(corser.create(
 )); 
 
 api.delete('/collection/:number([1-9]{1})', (req, res) => {
-  debug(`DELETE /${req.params.number}`); //
-  db.deleteCollection(`data${req.params.number}`)
-  .then((dropRes) => { res.status(200).end(); })
-  .catch((err) => {
-    res.statusCode = 404;
-    res.end(err.toString());
-  })
-  .then(() => debug(`DELETE /${req.params.name} => ${res.statusCode}`))
+  deleteCollection(res, `data${req.params.number}`);
 });
+
+api.delete('/collection/:name', (req, res) => {
+  deleteCollection(res, req.params.name);
+});
+
+function deleteCollection(res, collectionName) {
+	db.deleteCollection(collectionName)
+  .then((dropRes) => { res.status(200).end(); })
+  .catch((err) => { res.status(404).end(err.toString()); })
+  .then(() => debug(`DELETE /${req.params.name} => ${res.statusCode}`))
+}
 
 function getCrossmatch(fromCollection, toCollection) {
   return db.promisfyReadJson('./crossmatch.json')
@@ -95,6 +99,8 @@ exports.close = function() { server.close() };
 api.use('/collection', dataRouter);
 
 
-db.connect('mongodb://localhost:27017', 'temnames')
-.then(server = api.listen(process.env.API_PORT,() => {}))
+var dbHost = process.env.API_HOST || 'localhost';
+var apiPort = process.env.API_PORT || 8081;
+db.connect(`mongodb://${dbHost}:27017`, 'temnames')
+.then(server = api.listen(apiPort,() => {}))
 .catch((ex) => { console.log(ex); process.exit(-2) });

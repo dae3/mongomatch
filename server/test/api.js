@@ -8,7 +8,7 @@ const expect = chai.expect;
 const fs = require('fs');
 const through2 = require('through2');
 
-xdescribe('base api', () => {
+describe('base api', () => {
   const db = {
     connect: sinon.stub().resolves(),
 		deleteCollection: sinon.fake.resolves(),
@@ -21,9 +21,10 @@ xdescribe('base api', () => {
 	var URL;
 	before(() => {
 		process.env.API_PORT = '8800';
+		process.env.API_HOST = 'host';
 		process.env.CLIENT_URL = 'http://client.served.from.here:1234';
 		api = proxyquire('../src/api', { './db' : db });
-		URL = `http://localhost:${process.env.API_PORT}`;
+		URL = `http://${process.env.API_HOST}:${process.env.API_PORT}`;
 	});
 
 	const textToObjTransform = through2.obj(function(ch,enc,cb) { 
@@ -31,17 +32,10 @@ xdescribe('base api', () => {
 		this.push(JSON.parse(ch));
 		cb();
 	});
-//	const fakePipeline = [ { $lookup: { from: ''} }];
 
+	after(() => { api.close() });
 
-	after(() => { 
-		api.close() 
-//		var f = fs.createWriteStream('../client/temnames/src/app/tickle.ts');
-//		f.write('// Dummy file to trigger client unit testing from api unit testing');
-//		f.close();
-	});
-
-	it('should start and connect to the database', function(done) {
+	xit('should start and connect to the database', function(done) {
 		expect(db.connect).to.have.been.calledWith('mongodb://db:27017','temnames');
 		req.get(`${URL}`, function(err, res, body) {
 			expect(res.statusCode).to.equal(404);
@@ -111,11 +105,20 @@ xdescribe('base api', () => {
 		});
 	});
 
-	it('should delete a collection', function(done) {
+	it('should delete a numbered collection', function(done) {
 		db.deleteCollection = sinon.fake.resolves();
 		req.delete(`${URL}/collection/1`, function(err, res, body) {
 			expect(res.statusCode).to.equal(200);
 			expect(db.deleteCollection).to.be.calledWith('data1');
+			done();
+		});
+	});
+
+	it('should delete a named collection', function(done) {
+		db.deleteCollection = sinon.fake.resolves();
+		req.delete(`${URL}/collection/deleteMe`, function(err, res, body) {
+			expect(res.statusCode).to.equal(200);
+			expect(db.deleteCollection).to.be.calledWith('deleteMe');
 			done();
 		});
 	});
