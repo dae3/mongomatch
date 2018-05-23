@@ -44,7 +44,7 @@ api.get('/crossmatch/:from([1-9]{1})/:to([1-9]{1})', (req, res) => {
   debug(`/crossmatch ${req.params.from},${req.params.to}`);
   getCrossmatch(`data${req.params.from}`,`data${req.params.to}`)
   .then((cursor) => {
-		res.type('application/json');
+		res.set('content-type','application/json');
 		cursor.pipe(transforms.documentToJSON()).pipe(res);
 	})
   .catch((e) => {

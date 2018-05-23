@@ -52,7 +52,6 @@ function uploadCollection(req, res, collectionName) {
 }
 
 function writeCollection(name, data, namefield) {
-
 	data.forEach((d) => {
 		d.names = normaliseNames(d[namefield]);
 		d.name = d[namefield];
