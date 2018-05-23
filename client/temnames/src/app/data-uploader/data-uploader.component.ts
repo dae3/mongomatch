@@ -13,6 +13,7 @@ export class DataUploaderComponent implements OnInit {
     this.upload =   this.fb.group({
       name: ['', Validators.required ],
       namefield: ['', Validators.required ],
+			sheetname: ['', Validators.required ],
       fileValidator: [ '', Validators.required ]
     });
  }
@@ -34,9 +35,10 @@ export class DataUploaderComponent implements OnInit {
   private submit() {
     this.db.upload(
       this.upload.get('name').value,
+      this.upload.get('sheetname').value,
       this.upload.get('namefield').value,
       this.realfile.nativeElement.files[0]
-    ).subscribe(()=>console.log('u/pdone'));
+		).subscribe(() => this.loadCollectionsFromDb());
   }
 
   private delete(event) {

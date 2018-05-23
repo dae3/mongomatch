@@ -4,7 +4,7 @@ import { of } from 'rxjs/observable/of';
 import { DataUploaderComponent } from './data-uploader.component';
 import { FormsModule, ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 
-xdescribe('DataUploaderComponent', () => {
+describe('DataUploaderComponent', () => {
   let component: DataUploaderComponent;
   let fixture: ComponentFixture<DataUploaderComponent>;
   let element : HTMLElement;
@@ -16,7 +16,7 @@ xdescribe('DataUploaderComponent', () => {
       dummyDbCollections = dummyDbCollections.filter(a=>a!=collection);
       return of({status:'ok', collection:[]});
     },
-    upload: (name: string, namefield: string, file: File) => of({status:'ok', collection:[]})
+    upload: (name: string, sheetname: string, namefield: string, file: File) => of({status:'ok', collection:[]})
   };
 
   beforeEach(async(() => {
@@ -38,17 +38,17 @@ xdescribe('DataUploaderComponent', () => {
     element = fixture.nativeElement;
   });
 
-  it('should create', () => {
+  xit('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should show a list of collections', () => {
+  xit('should show a list of collections', () => {
       const cols = () => element.querySelectorAll('div.collectionList span');
 
       expect(cols().length).toBe(dummyDbCollections.length);
   });
 
-  it('should enable the upload button when the form is complete', () => {
+  xit('should enable the upload button when the form is complete', () => {
     const submit = () => (element.querySelector('form button[type=\'submit\']') as HTMLButtonElement);
 
     expect(submit().disabled).toBeTruthy();
@@ -66,34 +66,52 @@ xdescribe('DataUploaderComponent', () => {
     (element.querySelector('input[formControlName=\'namefield\']') as HTMLInputElement).value = 'something';
     element.querySelector('input[formControlName=\'namefield\']').dispatchEvent(new Event('input'));
     fixture.detectChanges();
+    expect(submit().disabled).toBeTruthy();
+
+    (element.querySelector('input[formControlName=\'sheetname\']') as HTMLInputElement).value = 'sheetname';
+    element.querySelector('input[formControlName=\'sheetname\']').dispatchEvent(new Event('input'));
+    fixture.detectChanges();
     expect(submit().disabled).not.toBeTruthy();
   });
 
-  it('should upload a collection', () => {
+  it('should upload a collection and refresh', fakeAsync(() => {
     // can't manipulate the file input control programmaticaly so just poke
     // a dummy valid into the  hidden validator field and expect an undefined
     // file on the  database call
-    const dspy = spyOn(fixture.debugElement.injector.get(DatabaseService), 'upload').and.returnValue(of('foo'));
-    (element.querySelector('input[formControlName=\'name\']') as HTMLInputElement).value = 'collectionname';
-    element.querySelector('input[formControlName=\'name\']').dispatchEvent(new Event('input'));
-    (element.querySelector('input[formControlName=\'fileValidator\']') as HTMLInputElement).value = 'filename';
-    element.querySelector('input[formControlName=\'fileValidator\']').dispatchEvent(new Event('input'));
-    (element.querySelector('input[formControlName=\'namefield\']') as HTMLInputElement).value = 'something';
-    element.querySelector('input[formControlName=\'namefield\']').dispatchEvent(new Event('input'));
+		var dbs = fixture.debugElement.injector.get(DatabaseService);
+    const dspy = spyOn(dbs, 'upload').and.returnValue(of('foo'));
+		dbs.getAllCollections = jasmine.createSpy()
+			.and.returnValue(of(['one','two','three']), of(['one','two','three','four']));
+
+		setFormInput(element, 'name', 'collectionname');
+		setFormInput(element, 'fileValidator', 'something');
+		setFormInput(element, 'namefield', 'namefield');
+		setFormInput(element, 'sheetname', 'sheetname');
     fixture.detectChanges();
 
-    (element.querySelector('form button[type=\'submit\']') as HTMLButtonElement).click();
-    expect(dspy).toHaveBeenCalledWith('collectionname','something',undefined);
-  })
+		var nCol = element.querySelectorAll('div.collectionList span').length;
 
-  it('should delete a collection', () => {
+    (element.querySelector('form button[type=\'submit\']') as HTMLButtonElement).click();
+    expect(dspy).toHaveBeenCalledWith('collectionname','sheetname','namefield',undefined);
+		tick();
+		fixture.detectChanges();
+		expect(dbs.getAllCollections).toHaveBeenCalled();
+  }));
+
+	function setFormInput(rootElement: HTMLElement, fieldName: string, value: string) {
+		var e = rootElement.querySelector(`input[formControlName='${fieldName}']`) as HTMLInputElement;
+		e.value = value;
+		e.dispatchEvent(new Event('input'));
+	}
+
+  xit('should delete a collection', () => {
     const dspy = spyOn(fixture.debugElement.injector.get(DatabaseService), 'delete');
     element.querySelectorAll('button.delete')[1].dispatchEvent(new Event('click'));
     fixture.detectChanges();
     expect(dspy).toHaveBeenCalledWith(dummyDbCollections[1]);
   });
 
-  it('should refresh after deleting a collection', fakeAsync(() => {
+  xit('should refresh after deleting a collection', fakeAsync(() => {
     element.querySelectorAll('button.delete')[1].dispatchEvent(new Event('click'));
     fixture.detectChanges();
     tick(2000);

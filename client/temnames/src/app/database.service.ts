@@ -25,10 +25,10 @@ export class DatabaseService {
 
   public loading : Subject<boolean>;
 
-  public upload(name: string, namefield: string, file: File) : Observable<DatabaseApiResponse> {
+  public upload(name: string, sheetname: string, namefield: string, file: File) : Observable<DatabaseApiResponse> {
     const data = new FormData();
     data.set('namefield', namefield);
-    data.set('sheet', 'Data 1');
+    data.set('sheet', sheetname);
     data.set('file', file);
     return this.http.post<DatabaseApiResponse>(`${this.URL}/collection/${name}`, data);
   }

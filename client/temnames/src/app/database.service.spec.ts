@@ -38,9 +38,11 @@ describe('DatabaseService', () => {
     let res : DatabaseApiResponse = { status: 'ok', collection: [] };
 
     let f = new File(['this is the file content'], 'andItHasAName.ext');
-    db.upload('collectionname', 'somefield', f).subscribe(r => { expect(r.status).toBe('ok') });
+    db.upload('collectionname', 'sheetname', 'namefield', f).subscribe(r => { expect(r.status).toBe('ok') });
     const req = httpTestingController.expectOne(`${BASEURL}/collection/collectionname`);
     expect(req.request.method).toBe('POST');
+		expect(req.request.body.get('sheet')).toBe('sheetname');
+		expect(req.request.body.get('namefield')).toBe('namefield');
     req.flush(res);
   }));
 
