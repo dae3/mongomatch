@@ -4,9 +4,10 @@ import { CollectionComponent } from '../collection/collection.component';
 import { ResultGridComponent } from '../result-grid/result-grid.component';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { DatabaseService } from '../database.service';
+import { Subject } from 'rxjs';
 import { of } from 'rxjs/observable/of';
 
-xdescribe('CollectionListComponent', () => {
+describe('CollectionListComponent', () => {
   let component: CollectionListComponent;
   let fixture: ComponentFixture<CollectionListComponent>;
   let elt : HTMLElement;
@@ -37,10 +38,9 @@ xdescribe('CollectionListComponent', () => {
   let mockDbService : Partial<DatabaseService> = {
     getAllCollections : () => of(dummyDbCollections),
     getCollection : () => of([{},{},{}]),
-    compare: (first: string, second: string) => of(dummyCompareResult)
+    compare: (first: string, second: string) => of(dummyCompareResult),
+		loading : new Subject()
   };
-
-
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -66,6 +66,15 @@ xdescribe('CollectionListComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+	it('should notice database changes and reload', () => {
+		const dbs = fixture.debugElement.injector.get(DatabaseService);
+		const dbspy = spyOn(dbs, 'getAllCollections').and.callThrough();
+		mockDbService.loading.next(true);
+		mockDbService.loading.next(false);
+
+		expect(dbspy).toHaveBeenCalled();
+	});
 
   it('should load all collections from the database', () => {
     expect(elt.querySelectorAll('select#collection1 option').length).toBe(dummyDbCollections.length+1);

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CollectionComponent } from '../collection/collection.component';
 import { ResultGridComponent } from '../result-grid/result-grid.component';
 import { DatabaseService } from '../database.service';
+import { Observable } from 'rxjs';
 
 class collectionSelectData {
   name: string;
@@ -20,7 +21,13 @@ export class CollectionListComponent implements OnInit  {
   private collection1 : string;
   private collection2 : string;
 
-  constructor(private db : DatabaseService) { }
+	constructor(private db : DatabaseService) {
+		db.loading.subscribe((isLoading) => {
+			if (!isLoading) {
+				this.dbLoad();
+			}
+		})
+	}
 
   public compare() {
     this.db.compare(this.collection1, this.collection2)
@@ -42,12 +49,16 @@ export class CollectionListComponent implements OnInit  {
     this[event.target.id] = v == "" ? undefined : v;
   }
 
-  ngOnInit() {
+	dbLoad() {
     this.db.getAllCollections().subscribe(
       collectionNames => collectionNames.forEach(
         c => this.collections.push(c)
       )
     );
+	}
+
+  ngOnInit() {
+		this.dbLoad();
   }
 
 }
