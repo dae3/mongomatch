@@ -6,6 +6,7 @@ services:
     environment:
       - NODE_ENV=debug
       - API_PORT=80
+      - API_HOST=db
       - CLIENT_URL=http://localhost:4200
       - DEBUG="temnames:*"
     volumes:
