@@ -78,10 +78,18 @@ api.get('/scoreCrossmatch/:from([1-9]{1})/:to([1-9]{1})', (req, res) => {
 });
 
 api.get('/collection/:number([1-9]{1})', (req, res) => {
-  db.promiseTable(`data${req.params.number}`)
+	getCollection(`data${req.params.number}`, res);
+});
+
+api.get('/collection/:name', (req, res) => {
+	getCollection(req.params.name, res);
+});
+
+function getCollection(name, res) {
+  db.promiseTable(name)
   .then((table) => table.find().pipe(transforms.documentToJSON()).pipe(res))
   .catch((e) => { res.statusCode = 500; res.end(e); });
-});
+}
 
 
 api.get('/collections', (req, res) => {

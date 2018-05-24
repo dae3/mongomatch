@@ -24,19 +24,22 @@ describe('base api', () => {
 		process.env.API_HOST = 'host';
 		process.env.CLIENT_URL = 'http://client.served.from.here:1234';
 		api = proxyquire('../src/api', { './db' : db });
-		URL = `http://${process.env.API_HOST}:${process.env.API_PORT}`;
+		URL = `http://localhost:${process.env.API_PORT}`;
 	});
 
-	const textToObjTransform = through2.obj(function(ch,enc,cb) { 
-	// naive implementation requires entire string on 1 line
-		this.push(JSON.parse(ch));
-		cb();
-	});
+	const textToObjTransform = function() { return through2.obj(function(ch,enc,cb) { 
+		// naive implementation requires entire string on 1 line
+			this.push(JSON.parse(ch));
+			cb();
+		});
+	};
 
 	after(() => { api.close() });
 
-	xit('should start and connect to the database', function(done) {
-		expect(db.connect).to.have.been.calledWith('mongodb://db:27017','temnames');
+	it('should start and connect to the database', function(done) {
+		expect(db.connect).to.have.been.calledWith(
+			`mongodb://${process.env.API_HOST}:27017`,'temnames'
+		);
 		req.get(`${URL}`, function(err, res, body) {
 			expect(res.statusCode).to.equal(404);
 			done();
@@ -64,7 +67,7 @@ describe('base api', () => {
 
 	it('should score two collections', function(done) {
 
-		const fakeDocsStream = fs.createReadStream('./test/matchsample.json').pipe(textToObjTransform);
+		const fakeDocsStream = fs.createReadStream('./test/matchsample.json').pipe(textToObjTransform());
 		db.promisfyReadJson = sinon.fake.resolves( [ { $lookup: { from: ''} } ] );
 		db.promisifyAggregateCollection = sinon.fake.resolves(fakeDocsStream);
 
@@ -84,23 +87,33 @@ describe('base api', () => {
 		});
 	});
 
+
+	const fakeCollection = {
+		find: function() {
+			return fs
+				.createReadStream('./test/matchsample.json')
+				.pipe(textToObjTransform());
+		}
+	};
+
+	const expectedCollection = JSON.parse('['+fs.readFileSync('./test/matchsample.json')+']');
+
+
 	it('should return a collection', function(done) {
-		const textToObjTransform = through2.obj(function(ch,enc,cb) {
-			// naive implementation requires entire string on 1 line
-			this.push(JSON.parse(ch));
-			cb();
-		});
-		const fakeCollection = {
-			find: function() {
-				return fs
-					.createReadStream('./test/matchsample.json')
-					.pipe(textToObjTransform);
-			}
-		};
 		db.promiseTable = sinon.fake.resolves(fakeCollection);
 		req.get(`${URL}/collection/5`, function(err, res, body) {
 			expect(res.statusCode).to.equal(200);
 			expect(db.promiseTable).to.be.calledWith('data5');
+			expect(JSON.parse(body)).to.deep.equal(expectedCollection);
+			done();
+		});
+	});
+
+	it('should return a named collection', function(done) {
+		db.promiseTable = sinon.fake.resolves(fakeCollection);
+		req.get(`${URL}/collection/name`, function(err, res, body) {
+			expect(res.statusCode).to.equal(200);
+			expect(db.promiseTable).to.be.calledWith('name');
 			done();
 		});
 	});
