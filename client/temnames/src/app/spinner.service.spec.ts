@@ -6,7 +6,7 @@ import { Observer } from 'rxjs/Observer';
 import { SpinnerService, ObservableInjector } from './spinner.service';
 
 
-xdescribe('SpinnerService', () => {
+describe('SpinnerService', () => {
   var httpClient : HttpClient;
   var httpTestingController : HttpTestingController;
 
@@ -27,7 +27,7 @@ xdescribe('SpinnerService', () => {
     expect(service).toBeTruthy();
   }));
 
-  it('should have an Observable loading status', fakeAsync(inject([SpinnerService], (ss: SpinnerService) => {
+	it('should have an Observable loading status', fakeAsync(inject([SpinnerService], (ss: SpinnerService) => {
     const res = {};
     const testObserver = { next: (b: boolean) =>  b }
     spyOn(testObserver, 'next');
@@ -37,10 +37,31 @@ xdescribe('SpinnerService', () => {
     // ensure nothing emitted until waiting a turn
     expect(testObserver.next).not.toHaveBeenCalled();
     tick();
-    expect(testObserver.next).toHaveBeenCalledWith(true);
     const req = httpTestingController.expectOne('/doesntMatter');
     req.flush(res);
     tick();
     expect(testObserver.next).toHaveBeenCalledWith(false);
   })));
+
+	it('should have an Observable database changed status', inject([SpinnerService], (ss: SpinnerService) => {
+
+		const res = {};
+		const testObserver = { next : (b: boolean) => b };
+		const s = spyOn(testObserver, 'next');
+		ss.hasChanged.subscribe(testObserver);
+
+		httpClient.delete<any>('/whatever').subscribe(()=>{});
+    httpTestingController.expectOne('/whatever').flush(res);
+		expect(s.calls.count()).toBe(1);
+
+		httpClient.post('/something', {}).subscribe(()=>{});
+		httpTestingController.expectOne('/something').flush(res);
+		expect(s.calls.count()).toBe(2);
+
+		httpClient.get('/foo').subscribe(()=>{});
+    httpTestingController.expectOne('/foo').flush(res);
+		expect(s.calls.count()).toBe(2);
+
+	}));
+	
 });
