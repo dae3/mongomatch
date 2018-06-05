@@ -1,39 +1,58 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { DatabaseService, DatabaseApiResponse } from '../database.service';
-import { Observable  } from 'rxjs/Observable';
+import { DatabaseService } from '../database.service';
+import { Observable } from 'rxjs';
+import 'rxjs/add/operator/switchMap';
+import 'rxjs/add/operator/first';
+import 'rxjs/add/operator/publish';
+import 'rxjs/add/operator/reduce';
+import 'rxjs/add/operator/do';
+import 'rxjs/add/operator/defaultIfEmpty';
+import { of } from 'rxjs/observable/of';
+import { from } from 'rxjs/observable/from';
 
 @Component({
-  selector: 'app-collection',
-  templateUrl: './collection.component.html',
-  styleUrls: ['./collection.component.css'],
+	selector: 'app-collection',
+	templateUrl: './collection.component.html',
+	styleUrls: ['./collection.component.css'],
 })
 
 export class CollectionComponent implements OnInit {
 
-  private data : Array<Object> = [];
-  private keys : Array<string> = [];
+	private data : Array<Object> = [];
+	private keys : Array<string> = [];
 
-  constructor(private db : DatabaseService) { }
+	constructor(private db : DatabaseService) {
+		db.changed.subscribe(() => this.loadData(this.name));
+	}
 
-  // NO: it should observe the database service
-  private isLoading : boolean = false;
+	public get numDocuments() : number { return this.data.length }
 
-  public get numDocuments() { return this.data.length }
+	private _name : string;
+	public get name() : string { return this._name; }
+	@Input()
+	public set name(val : string) {
+		this._name = val;
+		this.loadData(this._name);
+	}
 
-  private _name : string;
-  public get name() : string { return this._name; }
-  @Input()
-  public set name(val : string) {
-    this._name = val;
-    if (this._name != undefined) {
-      this.db.getCollection(this._name).subscribe(
-        d => {
-          this.data = d;
-          this.keys = Object.keys(this.data[0]);
-        }
-      );
-    }
-  }
+	loadData(collectionName : string) {
+		const data = this.db.getAllCollections()
+			.switchMap(collectionNames => from(collectionNames))  // array to Obs
+			.filter(v => v == collectionName)   // exists?
+			.switchMap(c => this.db.getCollection(c))  // data, or nothing
+			.defaultIfEmpty([]) // default is blank
+			.publish();
 
-  ngOnInit() {}
+		data.subscribe(docs => this.data = docs);
+		
+		data.switchMap(docs => from(docs)) // array -> elements
+			.first(v => v, (v, i) => v, {}) // take 1st, default blank
+			.switchMap(doc => Object.keys(doc))  // switch to keys
+			.reduce((a,v) => a.concat(v), []) 			// accumulate back to array
+			.subscribe(keys => this.keys = keys);
+
+		data.connect();
+	}
+
+	ngOnInit() {}
 }

@@ -1,6 +1,5 @@
 <div class="component">
   <h1 *ngIf="numDocuments > 0">{{numDocuments}} documents</h1>
-  <div *ngIf="isLoading" class="spinner">SPIN!</div>
   <div id="sampleDoc">
     <ul>
       <li *ngFor="let key of keys">{{key}}</li>

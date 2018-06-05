@@ -3,13 +3,9 @@ import { HttpClient, HttpRequest, HttpHandler, HttpInterceptor, HttpHeaders, Htt
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
 import { Subject } from 'rxjs/Subject';
-import { of } from 'rxjs/observable/of';
 import 'rxjs/add/operator/startWith';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/share';
-import 'rxjs/add/operator/do';
-import 'rxjs/add/operator/pluck';
-import 'rxjs/add/operator/startWith';
 
 @Injectable()
 export class DatabaseService {
@@ -17,12 +13,15 @@ export class DatabaseService {
   readonly ENDPOINTS = [
     'status','crossmatch','scoreCrossmatch','collection','data'
   ]
-  public loading : Subject<boolean>;
-	private rawLoading : Subject<DatabaseApiResponse>;
+  public loading : Observable<boolean>;
+	private rawLoading : Subject<any>;
+
+	public changed : Observable<boolean>;
 
   constructor(private http : HttpClient) {
-		this.rawLoading = new Subject<DatabaseApiResponse>();
+		this.rawLoading = new Subject<any>();
 		this.loading = this.rawLoading.map(()=>false).startWith(true).share();
+		this.changed = new Subject<boolean>();
   }
 
   public data() {
@@ -37,12 +36,14 @@ export class DatabaseService {
     data.set('file', file);
 		const res = this.http.post<DatabaseApiResponse>(`${this.URL}/collection/${name}`, data).share();
 		res.subscribe(this.rawLoading);
+		res.map(()=>true).subscribe(this.changed);
     return res;
   }
 
   public delete(collection: string) : Observable<DatabaseApiResponse> {
 		const res = this.http.delete<DatabaseApiResponse>(`${this.URL}/collection/${collection}`).share();
 		res.subscribe(this.rawLoading);
+		res.filter((r)=>r.status!='bad').map(()=>true).subscribe(this.changed);
 		return res;
   }
 
@@ -57,9 +58,11 @@ export class DatabaseService {
   }
 
   public compare(first: string, second: string) : Observable<Array<object>> {
-		return this.http.get<Array<object>>(
+		const res = this.http.get<Array<object>>(
 			`${this.URL}/scoreCrossmatch/${this.collectionName(first)}/${this.collectionName(second)}`
-		);
+		).share();
+		res.subscribe(this.rawLoading);
+		return res;
   }
 
 	collectionName(name: string) : string {
