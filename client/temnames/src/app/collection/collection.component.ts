@@ -3,6 +3,7 @@ import { DatabaseService } from '../database.service';
 import { Observable } from 'rxjs';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/first';
+import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/publish';
 import 'rxjs/add/operator/reduce';
 import 'rxjs/add/operator/do';
