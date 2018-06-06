@@ -22,11 +22,7 @@ export class CollectionListComponent implements OnInit  {
   private collection2 : string;
 
 	constructor(private db : DatabaseService) {
-		db.loading.subscribe((isLoading) => {
-			if (!isLoading) {
-				this.dbLoad();
-			}
-		})
+		db.changed.subscribe(() => this.dbLoad());
 	}
 
   public compare() {
@@ -50,15 +46,10 @@ export class CollectionListComponent implements OnInit  {
   }
 
 	dbLoad() {
-    this.db.getAllCollections().subscribe(
-      collectionNames => collectionNames.forEach(
-        c => this.collections.push(c)
-      )
-    );
+		this.db.getAllCollections()
+			.subscribe(collectionNames => this.collections = collectionNames)
 	}
 
-  ngOnInit() {
-		this.dbLoad();
-  }
+  ngOnInit() { this.dbLoad(); }
 
 }

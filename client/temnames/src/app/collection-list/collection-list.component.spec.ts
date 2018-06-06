@@ -36,10 +36,11 @@ describe('CollectionListComponent', () => {
   ];
 
   let mockDbService : Partial<DatabaseService> = {
-    getAllCollections : () => of(dummyDbCollections),
+		getAllCollections : () => of(dummyDbCollections),
     getCollection : () => of([{},{},{}]),
     compare: (first: string, second: string) => of(dummyCompareResult),
-		loading : new Subject()
+		loading : new Subject(),
+		changed : new Subject()
   };
 
   beforeEach(async(() => {
@@ -50,7 +51,7 @@ describe('CollectionListComponent', () => {
           ResultGridComponent
         ],
       providers: [
-        { provide: DatabaseService,  useValue: mockDbService }
+				{ provide: DatabaseService,  useValue: mockDbService },
       ]
     })
     .compileComponents();
@@ -70,10 +71,13 @@ describe('CollectionListComponent', () => {
 	it('should notice database changes and reload', () => {
 		const dbs = fixture.debugElement.injector.get(DatabaseService);
 		const dbspy = spyOn(dbs, 'getAllCollections').and.callThrough();
-		mockDbService.loading.next(true);
-		mockDbService.loading.next(false);
+		fixture.detectChanges();
+		const callcount = dbspy.calls.count();
 
-		expect(dbspy).toHaveBeenCalled();
+		dbs.changed.next(true);
+
+		// 1 call from this component, 2 (1 each) from the 2 child Collection components
+		expect(dbspy.calls.count()).toEqual(callcount+1+2);
 	});
 
   it('should load all collections from the database', () => {
