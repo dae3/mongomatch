@@ -1,23 +1,24 @@
-import { ComponentFixture, TestBed, fakeAsync, tick, async } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick, async, flushMicrotasks } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { CollectionListComponent } from './collection-list/collection-list.component';
 import { CollectionComponent } from './collection/collection.component';
 import { DatabaseService, DatabaseApiResponse } from './database.service';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs/Observable';
 import { DataUploaderComponent } from './data-uploader/data-uploader.component';
 import { ResultGridComponent } from './result-grid/result-grid.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject } from 'rxjs/Subject';
 import { of } from 'rxjs/observable/of';
+import { marbles } from 'rxjs-marbles/jasmine';
+
 
 describe('AppComponent', () => {
 
-  const testApiData = [ { one : 1 }, { two : 2 }, { three: 4 } ];
-
 	let databaseServiceStub : Partial<DatabaseService> = {
 		loading : new Subject<boolean>(),
-		changed : new Subject<boolean>()
+		changed : new Subject<boolean>(),
+		getAllCollections : () => of(['collection1','collection2','collection3']),
+		getCollection : (c : string) => of([ { one : 1 }, { two : 2 }, { three: 4 } ])
 	};
 	let fixture : ComponentFixture<AppComponent>;
 	let element : HTMLElement;
@@ -44,21 +45,23 @@ describe('AppComponent', () => {
 		element = fixture.nativeElement;
   }));
 
-  xit('should create the app', async(() => {
+  it('should create the app', async(() => {
     expect(component).toBeTruthy();
   }));
 
-	it('should display the spinner', () => {
+	it('should display the spinner', fakeAsync(marbles(m => {
 		const spinnerDiv = () => element.querySelector('div.spinner');
 		const db = fixture.debugElement.injector.get(DatabaseService);
+		db.loading = m.cold('ftf',{t:true, f:false});
 
-		expect(spinnerDiv()).toBe(null);
-		db.loading.next(true);
+		tick();
 		fixture.detectChanges();
-		expect(spinnerDiv()).not.toBe(null);
-		db.loading.next(false);
+		expect(spinnerDiv()).toBe(null, 'but not initially');
+		tick();
 		fixture.detectChanges();
-		expect(spinnerDiv()).toBe(null);
+		expect(spinnerDiv()).not.toBe(null, 'while loading');
+		fixture.detectChanges();
+		expect(spinnerDiv()).toBe(null, 'but not after loading');
 
-	});
+	})));
 });
