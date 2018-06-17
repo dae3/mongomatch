@@ -66,12 +66,20 @@ describe('base api', () => {
   });
 
 	it('should score two collections', function(done) {
+		testScoreCrossmatch('1','2',done);
+	});
+
+	it('should score two collections by name', function(done) {
+		testScoreCrossmatch('data1','data2',done);
+	});
+
+	testScoreCrossmatch = (col1, col2, done) => {
 
 		const fakeDocsStream = fs.createReadStream('./test/matchsample.json').pipe(textToObjTransform());
 		db.promisfyReadJson = sinon.fake.resolves( [ { $lookup: { from: ''} } ] );
 		db.promisifyAggregateCollection = sinon.fake.resolves(fakeDocsStream);
 
-		req.get(`${URL}/scoreCrossmatch/1/2`, function(err, res, body) {
+		req.get(`${URL}/scoreCrossmatch/${col1}/${col2}`, function(err, res, body) {
 				expect(res.statusCode).to.equal(200);
 				expect(res.headers['content-type']).to.equal('application/json; charset=utf-8');
 				expect(db.promisfyReadJson).to.have.been.calledWith( './crossmatch.json');
@@ -85,7 +93,7 @@ describe('base api', () => {
 				});
 				done();
 		});
-	});
+	};
 
 
 	const fakeCollection = {

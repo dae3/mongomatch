@@ -59,6 +59,16 @@ api.get('/crossmatch/:from([1-9]{1})/:to([1-9]{1})', (req, res) => {
 
 api.get('/scoreCrossmatch/:from([1-9]{1})/:to([1-9]{1})', (req, res) => {
   debug(`/scoreCrossmatch ${req.params.from},${req.params.to}`);
+	scoreCrossmatch(`data${req.params.from}`, `data${req.params.to}`, res);
+});
+
+api.get('/scoreCrossmatch/:from/:to', (req, res) => {
+  debug(`/scoreCrossmatch ${req.params.from},${req.params.to}`);
+	scoreCrossmatch(`${req.params.from}`, `${req.params.to}`, res);
+});
+
+
+function scoreCrossmatch(col1, col2, res) {
   const scoreTransform = through2.obj(function(ch,enc,cb) {
 		if (ch.hasOwnProperty('names') && ch.hasOwnProperty('matchedNames')) {
 			let basename = ch.names.reduce((a,v) => a += ` ${v}`).toLowerCase();
@@ -68,14 +78,14 @@ api.get('/scoreCrossmatch/:from([1-9]{1})/:to([1-9]{1})', (req, res) => {
     cb();
   });
 
-  getCrossmatch(`data${req.params.from}`, `data${req.params.to}`)
+  getCrossmatch(col1, col2)
   .then( (cursor) => {
 		res.type('application/json');
 		cursor.pipe(scoreTransform).pipe(transforms.documentToJSON()).pipe(res)
 	})
   .catch((err) => { res.status(500).end(err.toString()) })
 
-});
+}
 
 api.get('/collection/:number([1-9]{1})', (req, res) => {
 	getCollection(`data${req.params.number}`, res);
