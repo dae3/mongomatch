@@ -1,15 +1,14 @@
 import React, { Component } from 'react';
 import './App.css';
 import CollectionList from './CollectionList';
+import withApi from './withApi.js';
 
 class App extends Component {
   render() {
+		const CollectionListWithApi = withApi(CollectionList);
     return (
       <div className="App">
-        <header className="App-header">
-          <h1 className="App-title">temnames</h1>
-        </header>
-				<CollectionList />
+				<CollectionListWithApi dataUrl='/collections' />
       </div>
     );
   }

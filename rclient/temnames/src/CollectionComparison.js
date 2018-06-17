@@ -5,10 +5,14 @@ class CollectionComparison extends React.Component {
 	render() {
 		return (
 			<div className="CollectionComparison">
-				{this.props.collections.map(collection => collection.name)}
+				<h1>CollectionComparison</h1>
+				{this.props.apiData && 
+						<div>{JSON.stringify(this.props.apiData)}</div>
+				}
 			</div>
 		);
 	}
 }
+
 
 export default CollectionComparison;

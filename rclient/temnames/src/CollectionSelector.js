@@ -23,16 +23,6 @@ class CollectionSelector extends React.Component {
 					onChange={this.handleSelect}>
 					{selectOptions}
 				</select>
-
-				{this.props.collectionData.length > 0 &&
-					<div>{this.props.collectionData.length} documents
-						<ul>
-							{Object.keys(this.props.collectionData[0]).slice(0,5).map((k) =>
-								<li key={k}>{k}</li>)}
-						</ul>
-					</div>
-				}
-
 			</div>
 		);
 	}
