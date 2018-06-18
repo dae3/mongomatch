@@ -1,8 +1,8 @@
 import React from 'react';
 import './CollectionList.css';
 import CollectionSelector from './CollectionSelector';
-import CollectionData from './CollectionData';
-//import CollectionComparison from './CollectionComparison';
+import CollectionComparison from './CollectionComparison';
+import CollectionUploader from './CollectionUploader';
 import withApi from './withApi.js';
 
 class CollectionList extends React.Component {
@@ -45,24 +45,35 @@ class CollectionList extends React.Component {
 			</li>
 		);
 
-		//const CollectionComparisonWithApi = withApi(CollectionComparison);
-		const CollectionDataWithApi = withApi(CollectionData);
-
-		return (
-			<div className="CollectionList">
-				<ul>{collectionListItems}</ul>
-				<div className="CollectionListItems">
-					{this.state.collections.map((collection,index) => (
-						<div>
-							<CollectionSelector
+		const CollectionComparisonWithApi = withApi(CollectionComparison);
+		const readyToCompare = this.state.collections[0].name !== undefined && this.state.collections[1].name !== undefined;
+		const CollectionSelectorWithApi = withApi(CollectionSelector);
+		const selector = this.state.collections.length === 0 ? null : 
+					this.state.collections.map((collection,index) => (
+						<div key={index}>
+							<CollectionSelectorWithApi
 								id={index} key={index}
 								onChange={this.selectionChange}
+								value={collection.name}
+								dataUrl='/collections'
 								collectionNames={this.props.apiData}
 							/>
-							<CollectionDataWithApi dataUrl={'/collection/' + collection.name} />
 						</div>
-					))};
+					))
+
+		return (
+			<div className="CollectionList row">
+				<CollectionUploader apiReload={this.props.apiReload}/>
+				<ul>{collectionListItems}</ul>
+				<div className="CollectionListItems col-md-4">
+							{selector}
 				</div>
+				{ readyToCompare &&
+						<div>
+							<CollectionComparisonWithApi
+								dataUrl={`/scoreCrossmatch/${this.state.collections[0].name}/${this.state.collections[1].name}`} />
+						</div>
+				}
 			</div>
 		);
 	}

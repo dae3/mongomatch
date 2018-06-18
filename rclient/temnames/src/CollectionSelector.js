@@ -1,5 +1,7 @@
 import React from 'react';
 import './CollectionSelector.css';
+import CollectionData from './CollectionData';
+import withApi from './withApi.js';
 
 class CollectionSelector extends React.Component {
 	constructor(props) {
@@ -13,16 +15,30 @@ class CollectionSelector extends React.Component {
 	}
 
 	render() {
-		const cnWithDummy = ['-Select-',...this.props.collectionNames];
-		const selectOptions = cnWithDummy.map((n) => <option key={n} value={n}>{n}</option>);
+		const {
+			apiData = [],
+			apiError,
+			apiLoading,
+			id,
+			value
+		} = this.props;
+
+		const CollectionDataWithApi = withApi(CollectionData);
 
 		return (
-			<div className="CollectionSelector">
-
-				<select id={this.props.id}
-					onChange={this.handleSelect}>
-					{selectOptions}
-				</select>
+			<div>
+				{apiError && <p>{apiError.message}</p>}
+				{
+					apiLoading ? <p>loading...</p> :
+						<select id={id}
+							value={value}
+							onChange={this.handleSelect}>
+							{['-Select-',...apiData].map((n) => <option key={n} value={n}>{n}</option>)}
+						</select>
+				}
+				{ value === undefined ? null :
+						<CollectionDataWithApi dataUrl={`/collection/${value}`} />
+				}
 			</div>
 		);
 	}

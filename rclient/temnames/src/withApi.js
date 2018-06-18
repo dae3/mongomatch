@@ -5,7 +5,11 @@ function withApi(Component) {
 		constructor(props) {
 			super(props);
 
-			this.state = { data: [] };
+			this.state = {
+				data: [],
+				loading: false,
+				error: undefined
+			};
 
 			this.loadData = this.loadData.bind(this);
 		}
@@ -15,16 +19,23 @@ function withApi(Component) {
 		}
 
 		loadData() {
-			fetch(`http://localhost:8081${this.props.dataUrl}`)
+			this.setState({ loading: true });
+			this.req = fetch(`http://localhost:8081${this.props.dataUrl}`)
 				.then(response => response.json()
-					.then(data => this.setState({ data: data }))
+					.then(data => this.setState({ data: data, loading: false }))
 				)
-				.catch(error => console.log(error));
+				.catch(error => this.setState({ loading: false, error: error }))
 		}
 
 		render() {
 			return(
-				<Component apiData={this.state.data} apiReload={this.loadData} {...this.props} />
+				<Component
+					apiData={this.state.data}
+					apiLoading={this.state.loading}
+					apiReload={this.loadData}
+					apiError={this.state.error}
+					{...this.props}
+				/>
 			);
 		}
 	}

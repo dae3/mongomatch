@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import './App.css';
 import CollectionList from './CollectionList';
 import withApi from './withApi.js';
 
@@ -7,9 +6,9 @@ class App extends Component {
   render() {
 		const CollectionListWithApi = withApi(CollectionList);
     return (
-      <div className="App">
+			<div className='container'>
 				<CollectionListWithApi dataUrl='/collections' />
-      </div>
+			</div>
     );
   }
 }
