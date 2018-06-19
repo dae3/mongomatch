@@ -1,7 +1,7 @@
 import React from 'react';
 
 function withApi(Component) {
-	return class extends React.Component {
+	return class extends React.PureComponent {
 		constructor(props) {
 			super(props);
 
@@ -14,15 +14,16 @@ function withApi(Component) {
 			this.loadData = this.loadData.bind(this);
 		}
 
-		componentDidMount() {
-			this.loadData();
-		}
+		componentDidMount() { this.loadData() }
 
 		loadData() {
 			this.setState({ loading: true });
 			this.req = fetch(`http://localhost:8081${this.props.dataUrl}`)
 				.then(response => response.json()
-					.then(data => this.setState({ data: data, loading: false }))
+					.then(data => this.setState({
+						data: data,
+						loading: false,
+					}))
 				)
 				.catch(error => this.setState({ loading: false, error: error }))
 		}

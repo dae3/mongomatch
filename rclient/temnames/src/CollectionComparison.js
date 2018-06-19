@@ -13,11 +13,12 @@ class CollectionComparison extends React.Component {
 		this.setState( { threshold : event.target.value } )
 	}
 
-	componentDidMount() {
-	}
-
 	render() {
 		const { apiData, apiLoading } = this.props;
+
+		const fields = apiData.length > 0 ?
+			Object.keys(apiData[0]).filter( k => k !== 'matchedNames' ) :
+			[];
 
 		const thresholdRange = this.props.apiData
 			.map( row => row.matchedNames.map( name => name.score ) )
@@ -33,6 +34,9 @@ class CollectionComparison extends React.Component {
 				{ apiLoading ? <p>loading...</p> :
 						apiData.length > 0 &&
 						<div>
+							<select multiple>
+								{fields.map( f => <option value={f}>{f}</option> )}
+							</select>
 							less
 							<input
 								type="range"

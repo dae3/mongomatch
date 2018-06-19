@@ -3,7 +3,7 @@ import './CollectionSelector.css';
 import CollectionData from './CollectionData';
 import withApi from './withApi.js';
 
-class CollectionSelector extends React.Component {
+class CollectionSelector extends React.PureComponent {
 	constructor(props) {
 		super(props);
 
@@ -15,27 +15,15 @@ class CollectionSelector extends React.Component {
 	}
 
 	render() {
-		const {
-			apiData = [],
-			apiError,
-			apiLoading,
-			id,
-			value
-		} = this.props;
-
+		const { collectionNames, id, value } = this.props;
 		const CollectionDataWithApi = withApi(CollectionData);
 
 		return (
 			<div>
-				{apiError && <p>{apiError.message}</p>}
-				{
-					apiLoading ? <p>loading...</p> :
-						<select id={id}
-							value={value}
-							onChange={this.handleSelect}>
-							{['-Select-',...apiData].map((n) => <option key={n} value={n}>{n}</option>)}
-						</select>
-				}
+				<select id={id} value={value} onChange={this.handleSelect}>
+					{['-Select-',...collectionNames].map((n) =>
+						<option key={n} value={n}>{n}</option>)}
+				</select>
 				{ value === undefined ? null :
 						<CollectionDataWithApi dataUrl={`/collection/${value}`} />
 				}

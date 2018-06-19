@@ -10,10 +10,8 @@ class CollectionList extends React.Component {
 		super(props);
 
 		this.state = {
-			collections : [
-				{ name : undefined, data : [] },
-				{ name : undefined, data : [] }
-			]
+			leftCollection : undefined,
+			rightCollection : undefined
 		}
 
 		this.deleteButtonClick = this.deleteButtonClick.bind(this);
@@ -21,57 +19,34 @@ class CollectionList extends React.Component {
 	}
 
 	selectionChange(id, selectedValue) {
-		const collections = this.state.collections;
-		if (id <= this.state.collections.length) {
-			collections[id].name = selectedValue;
-			this.setState({ collections: collections });
-		}
+		this.setState( { [id] : selectedValue } );
 	}
 
 	deleteButtonClick(event) {
-		const delReq = new Request(
+		fetch(
 			`http://localhost:8081/collection/${event.target.value}`,
 			{ method : 'DELETE' }
-		);
-		fetch(delReq).then(res => this.props.apiReload());
+		).then(res => this.props.apiReload());
 	}
 
 	render() {
-		const collectionListItems = this.props.apiData.map((n) =>
-			<li key={n}>
-				<button value={n} onClick={this.deleteButtonClick}>Delete</button>
-				&nbsp;
-				{n}
-			</li>
-		);
-
 		const CollectionComparisonWithApi = withApi(CollectionComparison);
-		const readyToCompare = this.state.collections[0].name !== undefined && this.state.collections[1].name !== undefined;
-		const CollectionSelectorWithApi = withApi(CollectionSelector);
-		const selector = this.state.collections.length === 0 ? null : 
-					this.state.collections.map((collection,index) => (
-						<div key={index}>
-							<CollectionSelectorWithApi
-								id={index} key={index}
-								onChange={this.selectionChange}
-								value={collection.name}
-								dataUrl='/collections'
-								collectionNames={this.props.apiData}
-							/>
-						</div>
-					))
+		//const readyToCompare = this.state.collections[0].name !== undefined && this.state.collections[1].name !== undefined;
 
 		return (
 			<div className="CollectionList row">
 				<CollectionUploader apiReload={this.props.apiReload}/>
-				<ul>{collectionListItems}</ul>
-				<div className="CollectionListItems col-md-4">
-							{selector}
-				</div>
-				{ readyToCompare &&
+				<ul>
+					{this.props.apiData.map( col =>  
+						<li key={col}> <button value={col} onClick={this.deleteButtonClick}>Delete</button> &nbsp; {col} </li>
+					)}
+				</ul>
+				<CollectionSelector id="leftCollection" onChange={this.selectionChange} value={this.state.leftCollection} collectionNames={this.props.apiData} />
+				<CollectionSelector id="rightCollection" onChange={this.selectionChange} value={this.state.rightCollection} collectionNames={this.props.apiData} />
+				{ this.state.leftCollection !== undefined && this.state.rightCollection !== undefined &&
 						<div>
 							<CollectionComparisonWithApi
-								dataUrl={`/scoreCrossmatch/${this.state.collections[0].name}/${this.state.collections[1].name}`} />
+								dataUrl={`/scoreCrossmatch/${this.state.leftCollection}/${this.state.rightCollection}`} />
 						</div>
 				}
 			</div>
