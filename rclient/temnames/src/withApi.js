@@ -1,6 +1,7 @@
 import React from 'react';
 import Alert from 'react-bootstrap/lib/Alert';
 import Button from 'react-bootstrap/lib/Button';
+import Spinner from './Spinner';
 
 function withApi(Component) {
 	return class extends React.PureComponent {
@@ -38,7 +39,8 @@ function withApi(Component) {
 
 		render() {
 			return(
-				<div>
+				<React.Fragment>
+					{this.state.loading && <Spinner />}
 					{this.state.error !== undefined && 
 							<Alert bsStyle="danger">
 								{this.state.error.message}
@@ -52,7 +54,7 @@ function withApi(Component) {
 						apiError={this.state.error}
 						{...this.props}
 					/>
-				</div>
+				</React.Fragment>
 			);
 		}
 	}
