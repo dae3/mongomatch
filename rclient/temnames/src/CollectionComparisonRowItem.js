@@ -1,28 +1,20 @@
 import React from 'react';
-import './CollectionComparisonRowItem.css';
 import Popover from 'react-bootstrap/lib/Popover';
+import Badge from 'react-bootstrap/lib/Badge';
 import OverlayTrigger from 'react-bootstrap/lib/OverlayTrigger';
 
-class CollectionComparisonRowItem extends React.PureComponent {
+export default function CollectionComparisonRowItem({itemData}) {
 
-	render()  {
-		const {itemData} = this.props;
-		const dataPopover = 
-			<Popover id="dataPopover" title="Data">
-				<ul>
-					{Object.keys(itemData).filter( k => !(['score','name'].includes(k))).map( key => <li key={key}>{key}: {itemData[key]}</li> )}
-				</ul>
-			</Popover>;
+	const dataPopover = 
+		<Popover id="dataPopover" title="Data">
+			<ul>
+				{Object.keys(itemData).filter( k => !(['score','name'].includes(k))).map( key => <li key={key}>{key}: {itemData[key]}</li> )}
+			</ul>
+		</Popover>;
 
-		return (
-			<OverlayTrigger trigger="click" placement="bottom" overlay={dataPopover}>
-				<span>
-					{itemData.name}
-					<span className="badge badge-info">{itemData.score}</span>
-				</span>
-			</OverlayTrigger>
-		);
-	}
+	return (
+		<OverlayTrigger trigger="click" placement="bottom" overlay={dataPopover}>
+			<span> {itemData.name} <Badge>{itemData.score}</Badge> </span>
+		</OverlayTrigger>
+	);
 }
-
-export default CollectionComparisonRowItem;

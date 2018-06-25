@@ -27,7 +27,7 @@ class CollectionComparisonRow extends React.Component {
 		} else {
 			return (
 				<Row>
-					<Col xs={3}>{rowData.name}: {rowData.matchedNames.length}</Col>
+					<Col xs={3}>{rowData.name}</Col>
 					<Col xs={9}>
 						{ matches.map( match => <CollectionComparisonRowItem itemData={match} key={match.name} />) }
 					</Col>

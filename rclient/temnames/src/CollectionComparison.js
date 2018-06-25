@@ -38,9 +38,9 @@ class CollectionComparison extends React.Component {
 	}
 
 	render() {
-		const { apiData, apiLoading } = this.props;
+		const { apiData } = this.props;
 
-		const render = apiLoading ? <p>loading...</p> :
+		return(
 			<Grid>
 				<Row>
 					<Col xs={1}>less</Col>
@@ -68,9 +68,8 @@ class CollectionComparison extends React.Component {
 						rowData={row}
 						threshold={this.state.threshold} />
 				)}
-			</Grid>;
-
-		return render;
+			</Grid>
+		)
 	}
 }
 
