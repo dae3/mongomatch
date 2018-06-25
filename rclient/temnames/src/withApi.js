@@ -1,4 +1,6 @@
 import React from 'react';
+import Alert from 'react-bootstrap/lib/Alert';
+import Button from 'react-bootstrap/lib/Button';
 
 function withApi(Component) {
 	return class extends React.PureComponent {
@@ -12,9 +14,15 @@ function withApi(Component) {
 			};
 
 			this.loadData = this.loadData.bind(this);
+			this.dismissError = this.dismissError.bind(this);
 		}
 
 		componentDidMount() { this.loadData() }
+
+		dismissError() {
+			this.setState( { error: undefined } );
+			this.loadData();
+		}
 
 		loadData() {
 			this.setState({ loading: true });
@@ -30,13 +38,21 @@ function withApi(Component) {
 
 		render() {
 			return(
-				<Component
-					apiData={this.state.data}
-					apiLoading={this.state.loading}
-					apiReload={this.loadData}
-					apiError={this.state.error}
-					{...this.props}
-				/>
+				<div>
+					{this.state.error !== undefined && 
+							<Alert bsStyle="danger">
+								{this.state.error.message}
+								<Button onClick={this.dismissError}>Try again</Button>
+							</Alert>
+					}
+					<Component
+						apiData={this.state.data}
+						apiLoading={this.state.loading}
+						apiReload={this.loadData}
+						apiError={this.state.error}
+						{...this.props}
+					/>
+				</div>
 			);
 		}
 	}

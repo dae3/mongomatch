@@ -1,7 +1,9 @@
 import React from 'react';
-import './CollectionSelector.css';
 import CollectionData from './CollectionData';
 import withApi from './withApi.js';
+import FormGroup from 'react-bootstrap/lib/FormGroup';
+import ControlLabel from 'react-bootstrap/lib/ControlLabel';
+import FormControl from 'react-bootstrap/lib/FormControl';
 
 class CollectionSelector extends React.PureComponent {
 	constructor(props) {
@@ -19,15 +21,19 @@ class CollectionSelector extends React.PureComponent {
 		const CollectionDataWithApi = withApi(CollectionData);
 
 		return (
-			<div>
-				<select id={id} value={value} onChange={this.handleSelect}>
+			<FormGroup controlId={id}>
+				<ControlLabel>{this.props.label}</ControlLabel>
+				<FormControl
+					componentClass="select" 
+					value={value}
+					onChange={this.handleSelect}>
 					{['-Select-',...collectionNames].map((n) =>
 						<option key={n} value={n}>{n}</option>)}
-				</select>
+				</FormControl>
 				{ value === undefined ? null :
 						<CollectionDataWithApi dataUrl={`/collection/${value}`} />
 				}
-			</div>
+			</FormGroup>
 		);
 	}
 }

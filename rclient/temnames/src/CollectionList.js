@@ -1,9 +1,12 @@
 import React from 'react';
-import './CollectionList.css';
 import CollectionSelector from './CollectionSelector';
 import CollectionComparison from './CollectionComparison';
 import CollectionUploader from './CollectionUploader';
 import withApi from './withApi.js';
+import Col from 'react-bootstrap/lib/Col';
+import Grid from 'react-bootstrap/lib/Grid';
+import Row from 'react-bootstrap/lib/Row';
+import Button from 'react-bootstrap/lib/Button';
 
 class CollectionList extends React.Component {
 	constructor(props) {
@@ -31,25 +34,41 @@ class CollectionList extends React.Component {
 
 	render() {
 		const CollectionComparisonWithApi = withApi(CollectionComparison);
-		//const readyToCompare = this.state.collections[0].name !== undefined && this.state.collections[1].name !== undefined;
 
 		return (
-			<div className="CollectionList row">
-				<CollectionUploader apiReload={this.props.apiReload}/>
-				<ul>
-					{this.props.apiData.map( col =>  
-						<li key={col}> <button value={col} onClick={this.deleteButtonClick}>Delete</button> &nbsp; {col} </li>
-					)}
-				</ul>
-				<CollectionSelector id="leftCollection" onChange={this.selectionChange} value={this.state.leftCollection} collectionNames={this.props.apiData} />
-				<CollectionSelector id="rightCollection" onChange={this.selectionChange} value={this.state.rightCollection} collectionNames={this.props.apiData} />
+			<Grid>
+				<Row className="show-grid">
+					<Col xs={6}> <CollectionUploader apiReload={this.props.apiReload}/> </Col>
+					<Col xs={6}>
+						{this.props.apiData.map( col =>
+							<React.Fragment key={col}>
+								<Button onClick={this.deleteButtonClick} value={col}>Delete {col}</Button>
+								<br />
+							</React.Fragment>)
+						}
+					</Col>
+				</Row>
+				<Row>
+					<Col xs={6}>
+						<CollectionSelector
+							id="leftCollection" label="Compare..."
+							onChange={this.selectionChange} value={this.state.leftCollection} collectionNames={this.props.apiData}
+						/>
+					</Col>
+					<Col xs={6}>
+						<CollectionSelector
+							id="rightCollection" label="with..."
+							onChange={this.selectionChange} value={this.state.rightCollection} collectionNames={this.props.apiData}
+						/>
+					</Col>
+				</Row>
 				{ this.state.leftCollection !== undefined && this.state.rightCollection !== undefined &&
-						<div>
+						<Row>
 							<CollectionComparisonWithApi
 								dataUrl={`/scoreCrossmatch/${this.state.leftCollection}/${this.state.rightCollection}`} />
-						</div>
+						</Row>
 				}
-			</div>
+			</Grid>
 		);
 	}
 }
