@@ -4,7 +4,7 @@ import Nav from 'react-bootstrap/lib/Nav';
 import NavItem from 'react-bootstrap/lib/NavItem';
 import CollectionList from './CollectionList';
 import CollectionManager from './CollectionManager';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { Redirect, BrowserRouter as Router, Route } from 'react-router-dom';
 import withApi from './withApi.js';
 
 class App extends Component {
@@ -25,6 +25,7 @@ class App extends Component {
 
 				<Router>
 					<React.Fragment>
+						<Route exact path="/" render={ () => <Redirect to='/compare' /> } />
 						<Route path="/manage" render={ () =>
 								<CollectionManagerWithApi dataUrl='/collections' />
 						} />

@@ -38,40 +38,43 @@ class CollectionComparison extends React.Component {
 	}
 
 	render() {
-		const { apiData } = this.props;
+		const { apiData, apiLoading } = this.props;
 
-		return(
-			<Grid>
-				<Row>
-					<Col xs={1}>less</Col>
-					<Col xs={6}>
-						<input
-							type="range"
-							min="0"
-							value={this.state.threshold || 0}
-							max={this.state.thresholdRange}
-							onChange={this.thresholdChange}
-						/>
-					</Col>
-					<Col xs={1}>more</Col>
-					<Col xs={4}>
-						<Checkbox onChange={this.hnmChange} checked={this.state.hideNoMatch} value="foo">
-							Hide names with no matches
-						</Checkbox>
-					</Col>
-				</Row>
+		if (apiLoading) { return null; }
+		else {
+			return(
+				<Grid>
+					<Row>
+						<Col xs={1}>less</Col>
+						<Col xs={6}>
+							<input
+								type="range"
+								min="0"
+								value={this.state.threshold || 0}
+								max={this.state.thresholdRange}
+								onChange={this.thresholdChange}
+							/>
+						</Col>
+						<Col xs={1}>more</Col>
+						<Col xs={4}>
+							<Checkbox onChange={this.hnmChange} checked={this.state.hideNoMatch} value="foo">
+								Hide names with no matches
+							</Checkbox>
+						</Col>
+					</Row>
 
-				{apiData.map( row =>
-					<CollectionComparisonRow
-						key={row.name}
-						hideNoMatch={this.state.hideNoMatch}
-						rowData={row}
-						threshold={this.state.threshold} />
-				)}
-			</Grid>
-		)
+					{apiData.map( row =>
+						<CollectionComparisonRow
+							key={row.name}
+							hideNoMatch={this.state.hideNoMatch}
+							rowData={row}
+							threshold={this.state.threshold} />
+					)}
+				</Grid>
+			)
+		}
 	}
 }
 
 
-export default CollectionComparison;
+	export default CollectionComparison;
