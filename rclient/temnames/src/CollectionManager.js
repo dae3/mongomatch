@@ -8,9 +8,7 @@ export default function CollectionManager({ apiData, apiReload }) {
 		<React.Fragment>
 			<Panel>
 				<Panel.Heading>Upload a new collection</Panel.Heading>
-				<Panel.Body>
-					<Col xs={5}> <CollectionUploader apiReload={apiReload}/> </Col>
-				</Panel.Body>
+				<Panel.Body> <CollectionUploader apiReload={apiReload}/> </Panel.Body>
 			</Panel>
 			<Panel>
 				<Panel.Heading>Delete collections</Panel.Heading>

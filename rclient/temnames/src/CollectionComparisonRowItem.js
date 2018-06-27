@@ -13,8 +13,11 @@ export default function CollectionComparisonRowItem({itemData}) {
 		</Popover>;
 
 	return (
+			<span> {itemData.name} <Badge>{itemData.score}</Badge> </span>
+	);
+}
+	/*
 		<OverlayTrigger trigger="click" placement="bottom" overlay={dataPopover}>
 			<span> {itemData.name} <Badge>{itemData.score}</Badge> </span>
 		</OverlayTrigger>
-	);
-}
+		*/

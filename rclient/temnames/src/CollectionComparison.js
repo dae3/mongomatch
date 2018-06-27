@@ -4,6 +4,8 @@ import Grid from 'react-bootstrap/lib/Grid';
 import Row from 'react-bootstrap/lib/Row';
 import Col from 'react-bootstrap/lib/Col';
 import Checkbox from 'react-bootstrap/lib/Checkbox';
+import { WindowScroller, List } from 'react-virtualized';
+import 'react-virtualized/styles.css';
 
 class CollectionComparison extends React.Component {
 	constructor(props) {
@@ -12,10 +14,12 @@ class CollectionComparison extends React.Component {
 		this.thresholdChange = this.thresholdChange.bind(this);
 		this.hnmChange = this.hnmChange.bind(this);
 		this.state = { hideNoMatch : true, threshold : undefined };
+		this.listRef = undefined;
 	}
 
 	thresholdChange(event) {
 		this.setState( { threshold : event.target.value } )
+		this.listRef.recomputeRowHeights();
 	}
 
 	hnmChange(event) {
@@ -34,11 +38,32 @@ class CollectionComparison extends React.Component {
 				thresholdRange : thresholdRange,
 				threshold : Math.floor(thresholdRange / 2)
 			})
+
+			this.listRef.recomputeRowHeights();
 		}
 	}
 
 	render() {
 		const { apiData, apiLoading } = this.props;
+		const { threshold, thresholdRange, hideNoMatch } = this.state;
+		const rowRender = ({ key, index, style }) => {
+			return (
+				<div key={key} style={style}>
+					<CollectionComparisonRow
+						style={style}
+						key={apiData[index].name}
+						hideNoMatch={hideNoMatch}
+						rowData={apiData[index]}
+						threshold={threshold} />
+				</div>
+			);
+		};
+
+		// very rough rule of 5 names per line
+		const rowHeight = ({ index }) => {
+			return Math.ceil(apiData[index].matchedNames
+				.filter( m => m.score <= threshold ).length / 5) * 22 
+		};
 
 		if (apiLoading) { return null; }
 		else {
@@ -49,32 +74,30 @@ class CollectionComparison extends React.Component {
 						<Col xs={6}>
 							<input
 								type="range"
-								min="0"
-								value={this.state.threshold || 0}
-								max={this.state.thresholdRange}
+								min="0" max={thresholdRange}
+								value={threshold || 0}
 								onChange={this.thresholdChange}
 							/>
 						</Col>
 						<Col xs={1}>more</Col>
 						<Col xs={4}>
-							<Checkbox onChange={this.hnmChange} checked={this.state.hideNoMatch} value="foo">
+							<Checkbox onChange={this.hnmChange} checked={hideNoMatch} value="foo">
 								Hide names with no matches
 							</Checkbox>
 						</Col>
 					</Row>
-
-					{apiData.map( row =>
-						<CollectionComparisonRow
-							key={row.name}
-							hideNoMatch={this.state.hideNoMatch}
-							rowData={row}
-							threshold={this.state.threshold} />
-					)}
+					<WindowScroller>
+						{({ height, isScrolling, onChildScroll, scrollTop }) => (
+							<List
+								autoHeight height={height} rowCount={apiData.length} rowHeight={rowHeight} rowRenderer={rowRender} width={800}
+								onScroll={onChildScroll} scrollTop={scrollTop} isScrolling={isScrolling} ref={(ref)=>this.listRef=ref}
+							/>
+						)}
+					</WindowScroller>
 				</Grid>
 			)
 		}
 	}
 }
 
-
-	export default CollectionComparison;
+export default CollectionComparison;
