@@ -31,7 +31,7 @@ class CollectionSelector extends React.PureComponent {
 						<option key={n} value={n}>{n}</option>)}
 				</FormControl>
 				{ value === undefined ? null :
-						<CollectionDataWithApi dataUrl={`/collection/${value}`} />
+						<CollectionDataWithApi keyLimit={10} dataUrl={`/collection/${value}`} />
 				}
 			</FormGroup>
 		);

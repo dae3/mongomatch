@@ -23,7 +23,7 @@ class CollectionList extends React.Component {
 	}
 
 	render() {
-		const CollectionComparisonWithApi = withApi(CollectionComparison);
+		const CollectionComparisonWithApi= withApi(CollectionComparison);
 		const { leftCollection : left, rightCollection : right } = this.state;
 		const { apiData : data } = this.props;
 

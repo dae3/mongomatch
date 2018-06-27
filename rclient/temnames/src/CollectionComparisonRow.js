@@ -1,4 +1,7 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group'; 
+import './CollectionComparisonRowItem.css';
 import CollectionComparisonRowItem from './CollectionComparisonRowItem.js';
 import Col from 'react-bootstrap/lib/Col';
 import Row from 'react-bootstrap/lib/Row';
@@ -16,7 +19,7 @@ class CollectionComparisonRow extends React.Component {
 	}
 
 	render() {
-		const {rowData, threshold, hideNoMatch} = this.props;
+		const { rowData, threshold, hideNoMatch} = this.props;
 
 		this.threshold = threshold;
 		const matches = this.filteredMatches(this.sortedMatches(rowData.matchedNames), threshold);
@@ -29,7 +32,11 @@ class CollectionComparisonRow extends React.Component {
 				<Row>
 					<Col xs={3}>{rowData.name}</Col>
 					<Col xs={9}>
-						{ matches.map( match => <CollectionComparisonRowItem itemData={match} key={match.name} />) }
+						{ false ? '...' :
+							<ReactCSSTransitionGroup transitionName="item" transitionEnterTimeout={500} transitionLeaveTimeout={500}>
+								{ matches.map( match => <CollectionComparisonRowItem itemData={match} key={match.name} />) }
+							</ReactCSSTransitionGroup>
+						}
 					</Col>
 				</Row>
 			);
@@ -75,5 +82,11 @@ class CollectionComparisonRow extends React.Component {
 		}
 	}
 }
+
+CollectionComparisonRow.propTypes = {
+	rowData : PropTypes.array.isRequired,
+	threshold : PropTypes.number.isRequired,
+	hideNoMatch : PropTypes.bool.isRequired
+};
 
 export default CollectionComparisonRow;
