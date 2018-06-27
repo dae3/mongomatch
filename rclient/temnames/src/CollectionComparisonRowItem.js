@@ -13,7 +13,9 @@ export default function CollectionComparisonRowItem({itemData}) {
 		</Popover>;
 
 	return (
+		<OverlayTrigger trigger="click" placement="bottom" overlay={dataPopover}>
 			<span> {itemData.name} <Badge>{itemData.score}</Badge> </span>
+		</OverlayTrigger>
 	);
 }
 	/*
