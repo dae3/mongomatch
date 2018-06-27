@@ -1,6 +1,9 @@
 import React from 'react'; 
 import Button from 'react-bootstrap/lib/Button';
+import ListGroup from 'react-bootstrap/lib/ListGroup';
+import ListGroupItem from 'react-bootstrap/lib/ListGroupItem';
 import CollectionData from './CollectionData';
+import Panel from 'react-bootstrap/lib/Panel';
 import withApi from './withApi';
 
 class DeleteButton extends React.Component {
@@ -14,13 +17,20 @@ class DeleteButton extends React.Component {
 		const CollectionDataWithApi = withApi(CollectionData);
 
 		return(
-			<React.Fragment>
-				<p>{collection}</p>
-				<CollectionDataWithApi dataUrl={`/collection/${collection}`} />
-				<Button onClick={this.deleteButtonClick} value={collection}>
-					Delete 
-				</Button>
-			</React.Fragment>
+			<Panel>
+				<Panel.Heading>{collection}</Panel.Heading>
+				<Panel.Body>
+					<CollectionDataWithApi dataUrl={`/collection/${collection}`} />
+					<div>
+						<Button
+							bsStyle="danger"
+							onClick={this.deleteButtonClick}
+							value={collection}>
+							Delete
+						</Button>
+					</div>
+				</Panel.Body>
+			</Panel>
 		);
 	}
 
