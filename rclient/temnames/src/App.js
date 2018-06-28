@@ -12,6 +12,9 @@ class App extends Component {
 	render() {
 		const CollectionListWithApi = withApi(CollectionList);
 		const CollectionManagerWithApi = withApi(CollectionManager);
+		
+		const apiHost = process.env.REACT_APP_APIHOST;
+		const apiPort = process.env.REACT_APP_APIPORT;
 
 		return (
 			<React.Fragment>
@@ -27,10 +30,10 @@ class App extends Component {
 					<React.Fragment>
 						<Route exact path="/" render={ () => <Redirect to='/compare' /> } />
 						<Route path="/manage" render={ () =>
-								<CollectionManagerWithApi dataUrl='/collections' />
+								<CollectionManagerWithApi dataUrl='/collections' apiHost={apiHost} apiPort={apiPort} />
 						} />
 						<Route path="/compare" render={ () =>
-								<CollectionListWithApi dataUrl='/collections' />
+								<CollectionListWithApi dataUrl='/collections' apiHost={apiHost} apiPort={apiPort}/>
 						} />
 					</React.Fragment>
 				</Router>
