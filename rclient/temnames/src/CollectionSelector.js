@@ -17,7 +17,7 @@ class CollectionSelector extends React.PureComponent {
 	}
 
 	render() {
-		const { collectionNames, id, value } = this.props;
+		const { collectionNames, id, value, apiHost, apiPort } = this.props;
 		const CollectionDataWithApi = withApi(CollectionData);
 
 		return (
@@ -31,7 +31,7 @@ class CollectionSelector extends React.PureComponent {
 						<option key={n} value={n}>{n}</option>)}
 				</FormControl>
 				{ value === undefined ? null :
-						<CollectionDataWithApi keyLimit={10} dataUrl={`/collection/${value}`} />
+						<CollectionDataWithApi keyLimit={10} apiHost={apiHost} apiPort={apiPort} dataUrl={`/collection/${value}`} />
 				}
 			</FormGroup>
 		);

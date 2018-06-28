@@ -25,7 +25,7 @@ class CollectionList extends React.Component {
 	render() {
 		const CollectionComparisonWithApi= withApi(CollectionComparison);
 		const { leftCollection : left, rightCollection : right } = this.state;
-		const { apiData : data } = this.props;
+		const { apiData : data, apiHost, apiPort } = this.props;
 
 		return (
 			<Grid>
@@ -34,18 +34,21 @@ class CollectionList extends React.Component {
 						<CollectionSelector
 							id="leftCollection" label="Compare..."
 							onChange={this.selectionChange} value={left} collectionNames={data}
+							apiHost={apiHost} apiPort={apiPort}
 						/>
 					</Col>
 					<Col xs={6}>
 						<CollectionSelector
 							id="rightCollection" label="with..."
 							onChange={this.selectionChange} value={right} collectionNames={data}
+							apiHost={apiHost} apiPort={apiPort}
 						/>
 					</Col>
 				</Row>
 				{ left !== undefined && right !== undefined &&
 						<Row>
 							<CollectionComparisonWithApi
+								apiHost={apiHost} apiPort={apiPort}
 								dataUrl={`/scoreCrossmatch/${left}/${right}`} />
 						</Row>
 				}

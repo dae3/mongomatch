@@ -26,8 +26,9 @@ function withApi(Component) {
 		}
 
 		loadData() {
+			const { apiHost, apiPort, dataUrl } = this.props;
 			this.setState({ loading: true });
-			this.req = fetch(`http://localhost:8081${this.props.dataUrl}`)
+			this.req = fetch(`http://${apiHost}:${apiPort}${dataUrl}`)
 				.then(response => response.json()
 					.then(data => this.setState({
 						data: data,

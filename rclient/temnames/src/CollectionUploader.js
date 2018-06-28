@@ -51,8 +51,10 @@ class CollectionUploader extends React.Component {
 		formData.append('sheet', this.state.sheet);
 		formData.append('file', this.file);
 
+		const { apiHost, apiPort } = this.props;
+
 		fetch(
-			`http://localhost:8081/collection/${this.state.collection}`,
+			`http://${apiHost}:${apiPort}/collection/${this.state.collection}`,
 			{
 				method : 'POST',
 				body : formData,

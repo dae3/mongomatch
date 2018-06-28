@@ -11,14 +11,14 @@ class DeleteButton extends React.Component {
 	}
 
 	render() {
-		const { collection } = this.props;
+		const { collection, apiHost, apiPort } = this.props;
 		const CollectionDataWithApi = withApi(CollectionData);
 
 		return(
 			<Panel>
 				<Panel.Heading>{collection}</Panel.Heading>
 				<Panel.Body>
-					<CollectionDataWithApi dataUrl={`/collection/${collection}`} />
+					<CollectionDataWithApi apiHost={apiHost} apiPort={apiPort} dataUrl={`/collection/${collection}`} />
 					<div>
 						<Button
 							bsStyle="danger"
@@ -33,8 +33,9 @@ class DeleteButton extends React.Component {
 	}
 
 	deleteButtonClick(event) {
+		const { apiHost, apiPort } = this.props;
 		fetch(
-			`http://localhost:8081/collection/${event.target.value}`,
+			`http://${apiHost}:${apiPort}/collection/${event.target.value}`,
 			{ method : 'DELETE' }
 		).then(res => this.props.apiReload());
 	}
