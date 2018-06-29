@@ -16,6 +16,8 @@ class App extends Component {
 		const apiHost = process.env.REACT_APP_APIHOST;
 		const apiPort = process.env.REACT_APP_APIPORT;
 
+		console.log(`${apiHost}:${apiPort}`);
+
 		return (
 			<React.Fragment>
 				<Navbar>
