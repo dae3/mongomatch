@@ -1,9 +1,0 @@
-[
-	{ "$addFields" : 
-		{
-			"normalisedName" : { "$toLower" : { "$concat" : [ "$firstname", " ", "$lastname" ] } },
-			"firstname" : { "$toLower" : "$firstname" },
-			"lastname" : { "$toLower" : "$lastname" }
-		}
-	}
-]
