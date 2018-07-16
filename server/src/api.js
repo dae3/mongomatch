@@ -19,7 +19,7 @@ api.use(corser.create(
 		origins: [ process.env.CLIENT_URL ? process.env.CLIENT_URL : '*' ],
 		methods: ['GET','POST','DELETE']
 	}
-)); 
+));
 
 api.delete('/collection/:number([1-9]{1})', (req, res) => {
   deleteCollection(res, `data${req.params.number}`);
@@ -70,6 +70,11 @@ api.get('/scoreCrossmatch/:from/:to', (req, res) => {
 
 function scoreCrossmatch(col1, col2, res, fmt, unrollField, filename) {
 	debug(`${col1}, ${col2}, ${res}, ${fmt}, ${unrollField}`);
+	scoreCrossmatch(`${req.params.from}`, `${req.params.to}`, res, req.query.format, req.query.unroll);
+};
+
+
+function scoreCrossmatch(col1, col2, res, fmt, unrollField) {
   const scoreTransform = through2.obj(function(ch,enc,cb) {
 		if (ch.hasOwnProperty('names') && ch.hasOwnProperty('matchedNames')) {
 			let basename = ch.names.reduce((a,v) => a += ` ${v}`).toLowerCase();
@@ -91,6 +96,10 @@ function scoreCrossmatch(col1, col2, res, fmt, unrollField, filename) {
   getCrossmatch(col1, col2)
   .then( (cursor) => {
 		filename && res.append('Content-Disposition','attachment; filename="' + filename + '"');
+	const finalTransform = fmt === 'csv' ? transforms.documentToCsv(unrollField) : transforms.documentToJSON();
+
+  getCrossmatch(col1, col2)
+  .then( (cursor) => {
 		res.type(mimeType);
 		cursor.pipe(scoreTransform).pipe(finalTransform).pipe(res)
 	})

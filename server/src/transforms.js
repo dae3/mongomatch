@@ -22,7 +22,7 @@ const documentToCsv = (unrollField) => {
 		} else {
 			out.forEach( u =>
 				this.push(
-					"\"" + 
+					"\"" +
 					Object.values(u)
 					.filter( v => typeof v !== 'object')
 					.join("\",\"")
@@ -36,9 +36,9 @@ const documentToCsv = (unrollField) => {
 };
 
 const documentToJSON = () => {
-	var firstline = true;
+	var firstLine = true;
 	return through2.obj(function(chunk, enc, callback) {
-		if (firstline) { this.push('['); firstline = false; }
+		if (firstLine) { this.push('['); firstLine = false; }
 		else { this.push(',') }
 		this.push(JSON.stringify(chunk));
 		callback();
@@ -75,7 +75,7 @@ const documentToMultiCsv = (unrollField) => {
 		} else {
 			out.forEach( u =>
 				this.push(
-					"\"" + 
+					"\"" +
 					Object.values(u)
 					.filter( v => typeof v !== 'object')
 					.join("\",\"")
