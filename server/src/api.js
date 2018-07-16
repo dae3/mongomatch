@@ -59,16 +59,16 @@ api.get('/crossmatch/:from([1-9]{1})/:to([1-9]{1})', (req, res) => {
 
 api.get('/scoreCrossmatch/:from([1-9]{1})/:to([1-9]{1})', (req, res) => {
   debug(`/scoreCrossmatch ${req.params.from},${req.params.to}`);
-	scoreCrossmatch(`data${req.params.from}`, `data${req.params.to}`, res);
+	scoreCrossmatch(`data${req.params.from}`, `data${req.params.to}`, res, req.query.format);
 });
 
 api.get('/scoreCrossmatch/:from/:to', (req, res) => {
   debug(`/scoreCrossmatch ${req.params.from},${req.params.to}`);
-	scoreCrossmatch(`${req.params.from}`, `${req.params.to}`, res);
+	scoreCrossmatch(`${req.params.from}`, `${req.params.to}`, res, req.query.format, req.query.unroll);
 });
 
 
-function scoreCrossmatch(col1, col2, res) {
+function scoreCrossmatch(col1, col2, res, fmt, unrollField) {
   const scoreTransform = through2.obj(function(ch,enc,cb) {
 		if (ch.hasOwnProperty('names') && ch.hasOwnProperty('matchedNames')) {
 			let basename = ch.names.reduce((a,v) => a += ` ${v}`).toLowerCase();
@@ -78,10 +78,13 @@ function scoreCrossmatch(col1, col2, res) {
     cb();
   });
 
+	const mimeType = fmt === 'csv' ? 'text/csv' : 'application/json';
+	const finalTransform = fmt === 'csv' ? transforms.documentToCsv(unrollField) : transforms.documentToJSON();
+
   getCrossmatch(col1, col2)
   .then( (cursor) => {
-		res.type('application/json');
-		cursor.pipe(scoreTransform).pipe(transforms.documentToJSON()).pipe(res)
+		res.type(mimeType);
+		cursor.pipe(scoreTransform).pipe(finalTransform).pipe(res)
 	})
   .catch((err) => { res.status(500).end(err.toString()) })
 
