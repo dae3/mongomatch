@@ -3,17 +3,18 @@ const proxyquire = require('proxyquire');
 const req = require('request');
 const stream = require('stream');
 const chai = require('chai');
+chai.use(require('chai-match'));
 const sinon = require('sinon');
 const expect = chai.expect;
 const fs = require('fs');
 const through2 = require('through2');
 
 describe('base api', () => {
-  const db = {
-    connect: sinon.stub().resolves(),
+	const db = {
+		connect: sinon.stub().resolves(),
 		deleteCollection: sinon.fake.resolves(),
-    '@noCallThru': true
-  };
+		'@noCallThru': true
+	};
 
 	// api require inside before() to prevent it running
 	// when suite is .skipped
@@ -29,9 +30,9 @@ describe('base api', () => {
 
 	const textToObjTransform = function() { return through2.obj(function(ch,enc,cb) { 
 		// naive implementation requires entire string on 1 line
-			this.push(JSON.parse(ch));
-			cb();
-		});
+		this.push(JSON.parse(ch));
+		cb();
+	});
 	};
 
 	after(() => { api.close() });
@@ -46,7 +47,7 @@ describe('base api', () => {
 		});
 	});
 
-  it('should match two collections', function(done) {
+	it('should match two collections', function(done) {
 		const fakePipeline = [ { $lookup: { from: 'data2'} }];
 		const fakeDocsStream = new stream.Readable({objectMode: true});
 		[ { a: 'a', b:'b', c:'c'}, { a: 'a', b:'b', c:'c'}, null ].forEach(
@@ -57,41 +58,54 @@ describe('base api', () => {
 		db.promisifyAggregateCollection = sinon.fake.resolves(fakeDocsStream);
 
 		req.get(`${URL}/crossmatch/1/2`, function(err, res, body) {
-				expect(res.statusCode).to.equal(200);
-				expect(res.headers['content-type']).to.equal('application/json; charset=utf-8');
-				sinon.assert.calledWith(db.promisfyReadJson, './crossmatch.json');
-				sinon.assert.calledWith(db.promisifyAggregateCollection, 'data1', fakePipeline);
-				done();
+			expect(res.statusCode).to.equal(200);
+			expect(res.headers['content-type']).to.equal('application/json; charset=utf-8');
+			sinon.assert.calledWith(db.promisfyReadJson, './crossmatch.json');
+			sinon.assert.calledWith(db.promisifyAggregateCollection, 'data1', fakePipeline);
+			done();
 		});
-  });
+	});
 
 	it('should score two collections', function(done) {
 		testScoreCrossmatch('1','2',done);
 	});
 
-	it('should score two collections by name', function(done) {
-		testScoreCrossmatch('data1','data2',done);
+	it('should score two collections and return csv', function(done) {
+		testScoreCrossmatch('data1','data2',done, 'csv', 'matchedNames');
 	});
 
-	testScoreCrossmatch = (col1, col2, done) => {
+	it('should score two collections by name', function(done) {
+		testScoreCrossmatch('data1','data2',done, undefined, undefined);
+	});
+
+	testScoreCrossmatch = (col1, col2, done, fmt, unrollField) => {
 
 		const fakeDocsStream = fs.createReadStream('./test/matchsample.json').pipe(textToObjTransform());
 		db.promisfyReadJson = sinon.fake.resolves( [ { $lookup: { from: ''} } ] );
 		db.promisifyAggregateCollection = sinon.fake.resolves(fakeDocsStream);
 
-		req.get(`${URL}/scoreCrossmatch/${col1}/${col2}`, function(err, res, body) {
-				expect(res.statusCode).to.equal(200);
-				expect(res.headers['content-type']).to.equal('application/json; charset=utf-8');
-				expect(db.promisfyReadJson).to.have.been.calledWith( './crossmatch.json');
-				expect(db.promisifyAggregateCollection).to.have.been.calledWith(
-					'data1', [ { $lookup: { from: 'data2'} } ]
-				);
+		var url = `${URL}/scoreCrossmatch/${col1}/${col2}` + (fmt === 'csv' ? `?format=csv&unroll=${unrollField}` : '');
+		var expectedMimeType = (fmt === 'csv' ? 'text/csv' : 'application/json') + '; charset=utf-8';
+
+		req.get(url, function(err, res, body) {
+			expect(res.statusCode).to.equal(200);
+			expect(res.headers['content-type']).to.equal(expectedMimeType);
+			expect(db.promisfyReadJson).to.have.been.calledWith( './crossmatch.json');
+			expect(db.promisifyAggregateCollection).to.have.been.calledWith(
+				'data1', [ { $lookup: { from: 'data2'} } ]
+			);
+
+			if (fmt === 'csv') {
+				expect(body).to.match(/^_id,number,name,DN,score/);
+				expect(body.split('\n').length).to.equal(13);
+			} else {
 				var bodyObj = JSON.parse(body)[0];
 				expect(bodyObj).to.have.property('matchedNames');
 				bodyObj.matchedNames.map((mn)=>{
-								expect(mn).to.have.property('score').a('number')
+					expect(mn).to.have.property('score').a('number')
 				});
-				done();
+			}
+			done();
 		});
 	};
 
