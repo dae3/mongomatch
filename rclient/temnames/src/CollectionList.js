@@ -5,6 +5,9 @@ import withApi from './withApi.js';
 import Col from 'react-bootstrap/lib/Col';
 import Grid from 'react-bootstrap/lib/Grid';
 import Row from 'react-bootstrap/lib/Row';
+import ToggleButtonGroup from 'react-bootstrap/lib/ToggleButtonGroup';
+import ToggleButton from 'react-bootstrap/lib/ToggleButton';
+import FileDownload from './FileDownload.js';
 
 class CollectionList extends React.Component {
 	constructor(props) {
@@ -12,19 +15,25 @@ class CollectionList extends React.Component {
 
 		this.state = {
 			leftCollection : undefined,
-			rightCollection : undefined
+			rightCollection : undefined,
+			output : 'json'
 		}
 
 		this.selectionChange = this.selectionChange.bind(this);
+		this.outputChange = this.outputChange.bind(this);
 	}
 
 	selectionChange(id, selectedValue) {
 		this.setState( { [id] : selectedValue } );
 	}
 
+	outputChange(value) {
+		this.setState( { output : value } );
+	}
+
 	render() {
 		const CollectionComparisonWithApi= withApi(CollectionComparison);
-		const { leftCollection : left, rightCollection : right } = this.state;
+		const { leftCollection : left, rightCollection : right, output } = this.state;
 		const { apiData : data, apiHost, apiPort } = this.props;
 
 		return (
@@ -45,11 +54,19 @@ class CollectionList extends React.Component {
 						/>
 					</Col>
 				</Row>
-				{ left !== undefined && right !== undefined &&
+				<Row>
+					<ToggleButtonGroup name="output" value={output} onChange={this.outputChange}>
+						<ToggleButton value="json">Interactive comparison</ToggleButton><ToggleButton value="csv">CSV download</ToggleButton>
+					</ToggleButtonGroup>
+				</Row>
+				{ left !== undefined && right !== undefined && 
 						<Row>
-							<CollectionComparisonWithApi
-								apiHost={apiHost} apiPort={apiPort}
-								dataUrl={`/scoreCrossmatch/${left}/${right}`} />
+						{ output === 'json' &&
+							<CollectionComparisonWithApi apiHost={apiHost} apiPort={apiPort} dataUrl={`/scoreCrossmatch/${left}/${right}`} />
+						}
+						{ output === 'csv' && 
+								<FileDownload defaultFilename="comparison.csv" url={`http://${apiHost}:${apiPort}/scoreCrossmatch/${left}/${right}?format=csv&unroll=matchedNames`} />
+						}
 						</Row>
 				}
 			</Grid>
