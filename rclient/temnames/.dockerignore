@@ -1,5 +1,3 @@
 # this is hacky but haven't setup proper CI yet
 node_modules
-public
-src
 package-lock.json
