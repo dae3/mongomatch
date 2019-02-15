@@ -1,8 +1,8 @@
 version: "2"
 services:
   api:
-    image: "node"
-    working_dir: /home/node/app
+    build:
+       context: .
     environment:
       - NODE_ENV=debug
       - API_PORT=80
