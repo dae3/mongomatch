@@ -2,13 +2,7 @@ version: "2"
 services:
   api:
     build:
-      context: .
-    environment:
-      - NODE_ENV=debug
-      - API_PORT=80
-      - API_HOST=db
-      - CLIENT_URL=http://localhost:3000
-      - DEBUG="temnames:*"
+       context: .
     expose:
       - "80"
     ports:

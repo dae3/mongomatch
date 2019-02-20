@@ -6,7 +6,9 @@ WORKDIR /build
 COPY package.json .
 COPY src src/
 COPY public public/
-RUN npm install --verbose
+ENV REACT_APP_APIHOST localhost
+ENV REACT_APP_APIPORT 8000
+RUN npm install
 RUN npm run-script build
 
 FROM httpd:2.4
