@@ -16,12 +16,16 @@ api.post('/:name', upload.single('file'), (req, res) => {
 });
 
 function uploadCollection(req, res, collectionName) {
+	debug(`uploadCollection ${collectionName}`);
+
 	var worker = new Worker('./src/xlworker.js');
 
 	worker.onmessage = function(event) {
 		if (!event.data.ok) {
+			debug('uploadCollection worker event error');
 			res.status(400).end();
 		} else {
+			debug('uploadCollection worker event OK');
 			writeCollection(collectionName, event.data.sheetData, req.body.namefield)
 				.then(() => res.status(200).end())
 				.catch((e) => res.status(500).end(e.toString()))
