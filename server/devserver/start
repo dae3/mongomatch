@@ -1,0 +1,7 @@
+#!/bin/sh
+docker run \
+	-it --rm --name sdev -u 1000 \
+	--mount type=bind,src=$(pwd),dst=/app \
+	-p 8081:8081 \
+	--network=server_default \
+	sdev
