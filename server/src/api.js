@@ -69,6 +69,7 @@ api.get('/scoreCrossmatch/:from/:to', (req, res) => {
 
 
 function scoreCrossmatch(col1, col2, res, fmt, unrollField) {
+	debug(`${col1}, ${col2}, ${res}, ${fmt}, ${unrollField}`);
   const scoreTransform = through2.obj(function(ch,enc,cb) {
 		if (ch.hasOwnProperty('names') && ch.hasOwnProperty('matchedNames')) {
 			let basename = ch.names.reduce((a,v) => a += ` ${v}`).toLowerCase();
@@ -79,7 +80,7 @@ function scoreCrossmatch(col1, col2, res, fmt, unrollField) {
   });
 
 	const mimeType = fmt === 'csv' ? 'text/csv' : 'application/json';
-	const finalTransform = fmt === 'csv' ? transforms.documentToCsv(unrollField) : transforms.documentToJSON();
+	const finalTransform = fmt === 'csv' ? transforms.documentToMultiCsv(unrollField) : transforms.documentToJSON();
 
   getCrossmatch(col1, col2)
   .then( (cursor) => {

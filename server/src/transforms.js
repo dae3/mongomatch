@@ -49,14 +49,21 @@ const documentToJSON = () => {
 
 const documentToMultiCsv = (unrollField) => {
 	var firstline = true;
+
 	return through2.obj(function(chunk, enc, callback) {
 		var out;
+		var cleanchunk;
+
 		if (unrollField === undefined) {
 			out = [chunk];
 		} else {
-			out = chunk[unrollField].map( u => Object.assign(Object.assign({},chunk), u) );
+			cleanchunk = Object.assign({}, chunk);
+			delete cleanchunk[unrollField];
+			//			chunk[unrollField].map( u => debug(u));
+			out = chunk[unrollField].map( u => Object.assign(cleanchunk, u) );
+			debug(out);
+			//out = [chunk];
 		}
-		debug(`documentToMultiCsv ${out}`);
 
 		if (firstline) {
 			this.push(
