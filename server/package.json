@@ -5,7 +5,6 @@
   "main": "src/api.js",
   "scripts": {
     "start": "node src/api.js",
-    "prepublish": "npm run build",
     "test": "jasmine"
   },
   "author": "",
