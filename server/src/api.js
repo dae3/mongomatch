@@ -59,7 +59,7 @@ api.get('/crossmatch/:from([1-9]{1})/:to([1-9]{1})', (req, res) => {
 
 api.get('/scoreCrossmatch/:from([1-9]{1})/:to([1-9]{1})', (req, res) => {
   debug(`/scoreCrossmatch ${req.params.from},${req.params.to}`);
-	scoreCrossmatch(`data${req.params.from}`, `data${req.params.to}`, res, req.query.format);
+	scoreCrossmatch(`${req.params.from}`, `${req.params.to}`, res, req.query.format, req.query.unroll);
 });
 
 api.get('/scoreCrossmatch/:from/:to', (req, res) => {
