@@ -52,15 +52,15 @@ const documentToMultiCsv = (unrollField) => {
 
 	return through2.obj(function(chunk, enc, callback) {
 		var out;
-		var cleanchunk;
 
 		if (unrollField === undefined) {
 			out = [chunk];
 		} else {
-			cleanchunk = Object.assign({}, chunk);
-			delete cleanchunk[unrollField];
-			//			chunk[unrollField].map( u => debug(u));
-			out = chunk[unrollField].map( u => Object.assign(cleanchunk, u) );
+			out = chunk[unrollField].map( u => {
+				var cleanchunk = Object.assign({}, chunk);
+				delete cleanchunk[unrollField];
+				return Object.assign(cleanchunk, u);
+			});
 			debug(out);
 			//out = [chunk];
 		}
