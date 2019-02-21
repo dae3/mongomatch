@@ -1,6 +1,7 @@
 import React from 'react';
 import CollectionSelector from './CollectionSelector';
 import CollectionComparison from './CollectionComparison';
+import CollectionCSVExportButton from './CollectionCSVExportButton.js';
 import withApi from './withApi.js';
 import Col from 'react-bootstrap/lib/Col';
 import Grid from 'react-bootstrap/lib/Grid';
@@ -47,9 +48,15 @@ class CollectionList extends React.Component {
 				</Row>
 				{ left !== undefined && right !== undefined &&
 						<Row>
-							<CollectionComparisonWithApi
-								apiHost={apiHost} apiPort={apiPort}
-								dataUrl={`/scoreCrossmatch/${left}/${right}`} />
+							<Row>
+								<CollectionCSVExportButton
+									left={left} right={right} apiHost={apiHost} apiPort={apiPort} />
+							</Row>
+							<Row>
+								<CollectionComparisonWithApi
+									apiHost={apiHost} apiPort={apiPort}
+									dataUrl={`/scoreCrossmatch/${left}/${right}`} />
+							</Row>
 						</Row>
 				}
 			</Grid>
