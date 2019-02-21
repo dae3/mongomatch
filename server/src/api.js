@@ -80,7 +80,13 @@ function scoreCrossmatch(col1, col2, res, fmt, unrollField) {
   });
 
 	const mimeType = fmt === 'csv' ? 'text/csv' : 'application/json';
-	const finalTransform = fmt === 'csv' ? transforms.documentToMultiCsv(unrollField) : transforms.documentToJSON();
+	var finalTransform;
+	if (fmt === 'csv' && unrollField != null)
+		finalTransform = transforms.documentToMultiCsv(unrollField);
+	else if (fmt === 'csv')
+		finalTransform = transforms.documentToCsv();
+	else
+		finalTransform = transforms.documentToJSON();
 
   getCrossmatch(col1, col2)
   .then( (cursor) => {

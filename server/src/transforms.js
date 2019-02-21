@@ -59,11 +59,11 @@ const documentToMultiCsv = (unrollField) => {
 			out = chunk[unrollField].map( u => {
 				var cleanchunk = Object.assign({}, chunk);
 				delete cleanchunk[unrollField];
-				return Object.assign(cleanchunk, u);
+				Object.keys(u).map( k => cleanchunk[unrollField+'-'+k] = u[k] );
+				return cleanchunk;
 			});
-			debug(out);
-			//out = [chunk];
 		}
+		debug(out);
 
 		if (firstline) {
 			this.push(
