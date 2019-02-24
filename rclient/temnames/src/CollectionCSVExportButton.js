@@ -9,12 +9,19 @@ class CollectionCSVExportButton extends React.Component {
 
 	render() {
 		return(
-			<Button bsStyle="primary" onClick={this.buttonClick} >Export as CSV</Button>
+			<div>
+				<Button
+					bsStyle="primary"
+					onClick={this.buttonClick}
+					href={`http://${this.props.apiHost}:${this.props.apiPort}/scoreCrossmatch/${this.props.left}/${this.props.right}?format=csv&unroll=matchedNames&filename=comparison.csv`}>
+					Export as CSV
+				</Button>
+			</div>
 		);
 	}
 
 	buttonClick(event) {
-		window.location = `http://${this.props.apiHost}:${this.props.apiPort}/scoreCrossmatch/${this.props.left}/${this.props.right}?format=csv&unroll=matchedNames`;
+		window.location = "";
 	}
 }
 

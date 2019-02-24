@@ -59,16 +59,16 @@ api.get('/crossmatch/:from([1-9]{1})/:to([1-9]{1})', (req, res) => {
 
 api.get('/scoreCrossmatch/:from([1-9]{1})/:to([1-9]{1})', (req, res) => {
   debug(`/scoreCrossmatch ${req.params.from},${req.params.to}`);
-	scoreCrossmatch(`${req.params.from}`, `${req.params.to}`, res, req.query.format, req.query.unroll);
+	scoreCrossmatch(`${req.params.from}`, `${req.params.to}`, res, req.query.format, req.query.unroll, req.query.filename);
 });
 
 api.get('/scoreCrossmatch/:from/:to', (req, res) => {
   debug(`/scoreCrossmatch ${req.params.from},${req.params.to}`);
-	scoreCrossmatch(`${req.params.from}`, `${req.params.to}`, res, req.query.format, req.query.unroll);
+	scoreCrossmatch(`${req.params.from}`, `${req.params.to}`, res, req.query.format, req.query.unroll, req.query.filename);
 });
 
 
-function scoreCrossmatch(col1, col2, res, fmt, unrollField) {
+function scoreCrossmatch(col1, col2, res, fmt, unrollField, filename) {
 	debug(`${col1}, ${col2}, ${res}, ${fmt}, ${unrollField}`);
   const scoreTransform = through2.obj(function(ch,enc,cb) {
 		if (ch.hasOwnProperty('names') && ch.hasOwnProperty('matchedNames')) {
@@ -90,6 +90,7 @@ function scoreCrossmatch(col1, col2, res, fmt, unrollField) {
 
   getCrossmatch(col1, col2)
   .then( (cursor) => {
+		filename && res.append('Content-Disposition','attachment; filename="' + filename + '"');
 		res.type(mimeType);
 		cursor.pipe(scoreTransform).pipe(finalTransform).pipe(res)
 	})
