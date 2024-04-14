@@ -2,7 +2,6 @@ node_modules/
 *.swp
 *.csv
 *.xlsx
-package-lock.json
 _viminfo
 scratch.txt
 *.0x
